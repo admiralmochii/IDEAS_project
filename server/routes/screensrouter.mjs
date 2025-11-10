@@ -2,6 +2,8 @@ import express from "express";
 // import db from "../db/conn.mjs"
 import 'dotenv/config';
 import net from 'net';
+import arp from "@network-utils/arp-lookup"
+import {toMAC, toIP} from '@network-utils/arp-lookup'
 
 class SamsungMDC {
     constructor(host, port = 1515, displayId = 0) {
@@ -18,6 +20,7 @@ class SamsungMDC {
      */
     sendCommand(command, data = []) {
         return new Promise((resolve, reject) => {
+
             const client = net.createConnection({ 
                 host: this.host, 
                 port: this.port,
@@ -70,6 +73,7 @@ class SamsungMDC {
      */
     async powerOn() {
         try {
+            console.log(this.host)
             const response = await this.sendCommand(0x11, [0x01]);
             return this.parseResponse(response);
         } catch (error) {
@@ -83,6 +87,7 @@ class SamsungMDC {
      */
     async powerOff() {
         try {
+            console.log(this.host)
             const response = await this.sendCommand(0x11, [0x00]);
             return this.parseResponse(response);
         } catch (error) {
@@ -96,6 +101,7 @@ class SamsungMDC {
      */
     async getPowerStatus() {
         try {
+            console.log(this.host)
             const response = await this.sendCommand(0x11, []);
             // Parse response: [0xAA][0xFF][0x11][0x03][ACK][Data Length][Power State][Checksum]
             if (response.length >= 7 && response[4] === 0x41) { // 0x41 = ACK
@@ -134,8 +140,25 @@ class SamsungMDC {
     }
 }
 
+var display;
 // Usage example
-const display = new SamsungMDC('192.168.1.19', 1515, 0);
+async function get_ip_from_mac() {
+    try {
+        const ip = await arp.toIP("c8:12:0b:a7:63:b7");
+        return ip;
+    } catch (error) {
+        console.error("ARP lookup failed:", error);
+        throw error;
+    }
+}
+
+async function prepare_addresses() {
+    const ip_address = await get_ip_from_mac();
+    console.log(ip_address)
+    display = new SamsungMDC(ip_address, 1515, 0);
+}
+
+await prepare_addresses();
 
 const router = express.Router();
 
