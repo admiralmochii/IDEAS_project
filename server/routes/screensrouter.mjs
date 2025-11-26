@@ -328,110 +328,146 @@ function saveScreens(screens) {
 }
 
 router.get("/", (req, res) => {
-  res.json(getScreens());
+    res.json(getScreens());
 });
 
-router.post("/", (req, res) => {
-  const screens = getScreens();
-  const { name, ip, port = 1515, displayId = 0 } = req.body;
+router.post("/", async (req, res) => {
+    try {
+        const screens = getScreens();
+        let { name, ip, mac, port = 1515, displayId = 0 } = req.body;
 
-  if (!name || !ip) return res.status(400).json({ message: "Name and IP are required" });
-  if (screens.find(s => s.name === name)){
-    return res.status(400).json({ message: "Screen name already exists" });
-  }
-  if (screens.find(s => s.ip === ip)){
-    return res.status(400).json({ message: "IP is already used" });
-  }
+        if (!name) 
+            return res.status(400).json({ message: "Name is required" });
 
-  const newScreen = { id: Date.now(), name, ip, port, displayId };
-  screens.push(newScreen);
-  saveScreens(screens);
+        if (!ip && !mac) 
+            return res.status(400).json({ message: "Either an IP or a MAC are required" });
 
-  res.status(201).json(newScreen);
+        // If IP missing → find by MAC
+        if (!ip) {
+            const maybeIp = await findDeviceByMac(mac, getLocalSubnet());
+            if (maybeIp) {
+                ip = maybeIp;
+            } else {
+                return res.status(400).json({ message: "Unable to find IP from MAC" });
+            }
+        }
+
+        // If MAC missing → find by IP
+        if (!mac) {
+            const maybeMac = await getMacAddress(ip);
+            if (maybeMac) {
+                mac = maybeMac;
+            } else {
+                return res.status(400).json({ message: "Unable to find MAC from IP" });
+            }
+        }
+
+        // Validation
+        if (screens.find((s) => s.name === name))
+            return res.status(400).json({ message: "Screen name already exists" });
+
+        if (screens.find((s) => s.ip === ip))
+            return res.status(400).json({ message: "IP is already used" });
+
+        if (screens.find((s) => s.mac === mac))
+            return res.status(400).json({ message: "MAC is already used" });
+
+        // Add screen
+        const newScreen = { id: Date.now(), name, ip, mac, port, displayId };
+        screens.push(newScreen);
+        saveScreens(screens);
+
+        return res.status(201).json(newScreen);
+
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Server error", err });
+    }
 });
+
 
 router.put("/:id", (req, res) => {
-  const screens = getScreens();
-  const id = Number(req.params.id);
-  const { name } = req.body;
+    const screens = getScreens();
+    const id = Number(req.params.id);
+    const { name } = req.body;
 
-  const screen = screens.find(s => s.id === id);
-  if (!screen){
-    return res.status(404).json({ message: "Screen not found" });
-  }
-  if (screens.find(s => s.name === name && s.id !== id)){
-    return res.status(400).json({ message: "Screen name already exists" });
-  }
-  screen.name = name || screen.name;
-  saveScreens(screens);
-  res.json(screen);
+    const screen = screens.find(s => s.id === id);
+    if (!screen){
+        return res.status(404).json({ message: "Screen not found" });
+    }
+    if (screens.find(s => s.name === name && s.id !== id)){
+        return res.status(400).json({ message: "Screen name already exists" });
+    }
+    screen.name = name || screen.name;
+    saveScreens(screens);
+    res.json(screen);
 });
 
 router.delete("/:id", (req, res) => {
-  const screens = getScreens();
-  const id = Number(req.params.id);
+    const screens = getScreens();
+    const id = Number(req.params.id);
 
-  const screenIndex = screens.findIndex(s => s.id === id);
+    const screenIndex = screens.findIndex(s => s.id === id);
 
-  if (screenIndex === -1) {
-    return res.status(404).json({ message: "Screen not found" });
-  }
+    if (screenIndex === -1) {
+        return res.status(404).json({ message: "Screen not found" });
+    }
 
-  // Remove the screen from the array
-  const deletedScreen = screens.splice(screenIndex, 1)[0];
+    // Remove the screen from the array
+    const deletedScreen = screens.splice(screenIndex, 1)[0];
 
-  // Save updated list
-  saveScreens(screens);
+    // Save updated list
+    saveScreens(screens);
 
-  res.json({
-    message: `Screen "${deletedScreen.name}" deleted successfully`,
-    deleted: deletedScreen
-  });
+    res.json({
+        message: `Screen "${deletedScreen.name}" deleted successfully`,
+        deleted: deletedScreen
+    });
 });
 
 // Add power on endpoint
 router.post("/:id/power/on", async (req, res) => {
-  const screens = getScreens();
-  const screen = screens.find(s => s.id === Number(req.params.id));
-  if (!screen) return res.status(404).json({ message: "Not found" });
+    const screens = getScreens();
+    const screen = screens.find(s => s.id === Number(req.params.id));
+    if (!screen) return res.status(404).json({ message: "Not found" });
 
-  const display = new SamsungMDC(screen.ip, screen.port, screen.displayId);
-  try {
-    const result = await display.powerOn();
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+    const display = new SamsungMDC(screen.ip, screen.port, screen.displayId);
+    try {
+        const result = await display.powerOn();
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
 // Add power off endpoint
 router.post("/:id/power/off", async (req, res) => {
-  const screens = getScreens();
-  const screen = screens.find(s => s.id === Number(req.params.id));
-  if (!screen) return res.status(404).json({ message: "Not found" });
+    const screens = getScreens();
+    const screen = screens.find(s => s.id === Number(req.params.id));
+    if (!screen) return res.status(404).json({ message: "Not found" });
 
-  const display = new SamsungMDC(screen.ip, screen.port, screen.displayId);
-  try {
-    const result = await display.powerOff();
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+    const display = new SamsungMDC(screen.ip, screen.port, screen.displayId);
+    try {
+        const result = await display.powerOff();
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
 // Status endpoint
 router.get("/:id/status", async (req, res) => {
-  const screens = getScreens();
-  const screen = screens.find(s => s.id === Number(req.params.id));
-  if (!screen) return res.status(404).json({ message: "Not found" });
+    const screens = getScreens();
+    const screen = screens.find(s => s.id === Number(req.params.id));
+    if (!screen) return res.status(404).json({ message: "Not found" });
 
-  const display = new SamsungMDC(screen.ip, screen.port, screen.displayId);
-  try {
-    const status = await display.getPowerStatus();
-    res.json(status);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+    const display = new SamsungMDC(screen.ip, screen.port, screen.displayId);
+    try {
+        const status = await display.getPowerStatus();
+        res.json(status);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
 export default router;
