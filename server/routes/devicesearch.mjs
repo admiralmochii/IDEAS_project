@@ -152,163 +152,32 @@ function getLocalSubnet() {
     return '192.168.1'; // Default fallback
 }
 
-const router = express.Router();
-
 // Status endpoint
-router.get("/refresh", async (req, res) => {
-  try {
-
-    const devices = await collection.find({}).toArray()
-
-    console.log(devices)
-    for (let device of devices) {
-        console.log(device)
-        try {
-            let device_ip = await findIpByMac(device.mac)
-
-            if (device.ip != device_ip) {
-                await collection.findOneAndUpdate({mac:`${device.mac}`}, {$set: {ip:`${device_ip}`}})
-            } else {
-                console.log("No changes needed moving on to the next device entry.")
-            }
-        } catch(err) {
-            console.log(err)
-            continue
-        }
-    
-    }
-
-    res.status(200).json({ message: "Refreshed devices successfully"});
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-router.post("/add", async (req,res) => {
-    let {device_name, mac = "", ip, password = "", username = "", category} = req.body
-
-    if (!device_name) 
-        return res.status(400).json({ message: "Name is required" });
-
-    if (!ip && !mac) 
-        return res.status(400).json({ message: "Either an IP or a MAC are required" });
-
-    if (!mac) {
-        const maybeMac = await getMacAddress(ip);
-        if (maybeMac) {
-            mac = maybeMac;
-        } else {
-            return res.status(400).json({ message: "Unable to find MAC from IP" });
-        }
-    }
-
-    if (!category) {
-        return res.status(400).json({ message: "Category is required"})
-    }
-
-    //category
-    // 1 is screens
-    // 2 is pc's
-    // 3 is lights
-    // 4 is projector
-
-    if (category == "2") {
-        if (!password || !username) {
-            return res.status(400).json({ message: "PC's require the password and username of the account on the PC."})
-        }
-    }
-
-    //check if device already exists TODO
-
-    let new_device = {
-        device_name: device_name,
-        mac: mac,
-        ip: ip,
-        password: password,
-        username: username,
-        category: category
-    }
-
+export async function device_refresh() {
     try {
-        await collection.insertOne(new_device)
 
-        return res.status(200).json({ message: "Device added successfully" })
-    } catch(err) {
-        console.error(err)
-        return res.status(500).json({ message: `Error saving device: ${err}`})
-    }
-})
-
-router.put("/update", async (req,res) => {
-    let {device_name, mac = "", ip, password = "", username = "", category} = req.body
-
-    if (!device_name) 
-        return res.status(400).json({ message: "Name is required" });
-
-    if (!ip && !mac) 
-        return res.status(400).json({ message: "Either an IP or a MAC are required" });
-
-    if (!mac) {
-        const maybeMac = await getMacAddress(ip);
-        if (maybeMac) {
-            mac = maybeMac;
-        } else {
-            return res.status(400).json({ message: "Unable to find MAC from IP" });
-        }
-    }
-
-    if (!category) {
-        return res.status(400).json({ message: "Category is required"})
-    }
-
-    //category
-    // 1 is screens
-    // 2 is pc's
-    // 3 is lights
-    // 4 is projector
-
-    if (category == "2") {
-        if (!password || !username) {
-            return res.status(400).json({ message: "PC's require the password and username of the account on the PC."})
-        }
-    }
-
-    let new_device = {
-        device_name: device_name,
-        mac: mac,
-        ip: ip,
-        password: password,
-        username: username,
-        category: category
-    }
-
-    try {
-        await collection.updateOne({device_name: device_name}, {$set: new_device})
-    } catch(err) {
-        console.error(err)
-        return res.status(500).json({ message: `Error saving device: ${err}`})
-    }
-
-})
-
-router.delete("/delete/:device", async (req,res) => {
-    let {device_name} = String(req.params.device)
-
-    var check = await collection.findOne({device_name: device_name})
-
-    if (!check) {
-        return res.status(400).json({ message: "Device cannot be found in records, do check again."})
-    }
-    
-    try {
-        await collection.findOneAndDelete({device_name: device_name})
+        const devices = await collection.find({}).toArray()
         
-        return res.status(200).json({message: "Device deleted succesfully."})
-    } catch(err) {
+        console.log(devices)
+        for (let device of devices) {
+            console.log(device)
+            try {
+                let device_ip = await findIpByMac(device.mac)
+
+                if (device.ip != device_ip) {
+                    await collection.findOneAndUpdate({mac:`${device.mac}`}, {$set: {ip:`${device_ip}`}})
+                } else {
+                    console.log("No changes needed moving on to the next device entry.")
+                }
+            } catch(e) {
+                console.log(e)
+                continue
+            }
+        
+        }
+    } catch (err) {
         console.error(err)
-        return res.status(500).json({message: `Error deleting device: ${err}`})
     }
-})
+}
 
 
-export default router;

@@ -20,6 +20,8 @@ import projectorrouter from "./routes/projecterrouter.mjs";
 import screensrouter from "./routes/screensrouter.mjs";
 import devicerouter from "./routes/devicerouter.mjs";
 
+import { device_refresh } from "./routes/devicesearch.mjs"
+
 // CHECK ideascomment (IDC) for changes and notes
 
 const PORT = process.env.PORT || 5050;
@@ -72,3 +74,5 @@ app.get("/",(req,res) => {
 app.listen(PORT,hostname, () => {
     console.log(`Server is running on port: http://${hostname}:${PORT}`);
 });
+
+device_refresh();
