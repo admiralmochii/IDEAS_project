@@ -27,7 +27,9 @@
     "passport": "^0.7.0",
     "passport-google-oauth": "^2.0.0",
     "passport-local": "^1.0.0",
+    "pjlink": "^0.2.8",
     "tp-link-tapo-connect": "^2.0.8",
+    "tuyapi": "github:codetheweb/tuyapi",
     "wake_on_lan": "^1.0.0"
   }
 }
