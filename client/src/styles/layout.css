@@ -1,0 +1,20 @@
+/* BASE LAYOUT */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #0f0f0f;
+}
+
+.app-layout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  background-image: url("../assets/Background.jpg");
+}
+
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.2vw;
+}

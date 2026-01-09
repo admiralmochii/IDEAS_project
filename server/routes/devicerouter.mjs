@@ -11,6 +11,75 @@ const execAsync = promisify(exec);
 
 let collection = db.collection("devices")
 
+class SamsungMDC {
+  constructor(host, port = 1515, displayId = 0) {
+    this.host = host;
+    this.port = port;
+    this.displayId = displayId;
+  }
+
+  sendCommand(command, data = []) {
+    return new Promise((resolve, reject) => {
+      const client = net.createConnection({
+        host: this.host,
+        port: this.port,
+        timeout: 5000
+      });
+
+      client.on("connect", () => {
+        const header = 0xAA;
+        const packet = [header, command, this.displayId, data.length, ...data];
+        let checksum = packet.slice(1).reduce((a, b) => a + b, 0) & 0xff;
+        packet.push(checksum);
+        client.write(Buffer.from(packet));
+      });
+
+      client.on("data", data => {
+        resolve(data);
+        client.end();
+      });
+
+      client.on("error", reject);
+      client.on("timeout", () => reject(new Error("Timeout")));
+    });
+  }
+
+  powerOn() {
+    return this.sendCommand(0x11, [0x01]);
+  }
+
+  powerOff() {
+    return this.sendCommand(0x11, [0x00]);
+  }
+
+  /**
+  * Get power status
+  * Command: 0x11 with no data (query)
+  */
+  async getPowerStatus() {
+      try {
+          const response = await this.sendCommand(0x11, []);
+          // Parse response: [0xAA][0xFF][0x11][0x03][ACK][Data Length][Power State][Checksum]
+          if (response.length >= 7 && response[4] === 0x41) { // 0x41 = ACK
+              const powerState = response[6];
+              return {
+                  raw: powerState,
+                  state: powerState === 0x01 ? 'ON' : 
+                          powerState === 0x00 ? 'OFF' : 
+                          powerState === 0x02 ? 'STANDBY' : 'Loading...'
+              };
+          }
+          throw new Error('Invalid response');
+      } catch (error) {
+          throw new Error(`Failed to get power status: ${error.message}`);
+      }
+  }
+}
+
+function isValidCategory(cat) {
+  return ["1", "2", "3", "4"].includes(String(cat));
+}
+
 /**
  * Get MAC address for a given IP from ARP cache
  */
@@ -179,6 +248,197 @@ router.get("/refresh", async (req, res) => {
     }
 
     res.status(200).json({ message: "Refreshed devices successfully"});
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const filter = {};
+    if (req.query.category) {
+      filter.category = String(req.query.category);
+    }
+
+    const devices = await collection.find(filter).toArray();
+
+    // working only on screens for now
+    if (req.query.category === "1") {
+      for (const device of devices) {
+        try {
+          const display = new SamsungMDC(device.ip);
+          const status = await display.getPowerStatus();
+          device.state = status.state; // computed, NOT stored
+        } catch {
+          device.state = "Loading...";
+        }
+      }
+    }
+
+    res.json(devices);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/**
+ * GET device by id
+ */
+router.get("/:id", async (req, res) => {
+  try {
+    const device = await collection.findOne({
+      _id: new ObjectId(req.params.id)
+    });
+
+    if (!device) {
+      return res.status(404).json({ message: "Device not found" });
+    }
+
+    res.json(device);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/**
+ * CREATE device
+ */
+import { ObjectId } from "mongodb";
+
+router.post("/", async (req, res) => {
+  try {
+    let {
+      device_name,
+      ip,
+      mac,
+      category,
+      username = "",
+      password = "",
+    } = req.body;
+
+    if (!device_name)
+      return res.status(400).json({ message: "device_name is required" });
+
+    if (!ip && !mac)
+      return res.status(400).json({ message: "IP or MAC required" });
+
+    // Resolve IP from MAC
+    if (!ip && mac) {
+      ip = await findIpByMac(mac);
+    }
+
+    // Resolve MAC from IP
+    if (!mac && ip) {
+      mac = await getMacAddress(ip);
+    }
+
+    if (!ip || !mac)
+      return res.status(400).json({ message: "Unable to resolve IP/MAC" });
+
+    // Uniqueness checks
+    const exists = await collection.findOne({
+      $or: [{ ip }, { mac }, { device_name }]
+    });
+
+    if (exists)
+      return res.status(400).json({ message: "Device already exists" });
+    console.log(category);
+    category = String(category) // convert category to string
+    if (!isValidCategory(category)) { // check if category is one of the 4 categories
+      return res.status(400).json({ message: "Category needs to be 1, 2, 3 or 4"});
+    };
+
+    const device = {
+      device_name,
+      ip,
+      mac,
+      username,
+      password,
+      category,
+    };
+
+    const result = await collection.insertOne(device);
+
+    res.status(201).json({
+      _id: result.insertedId,
+      ...device
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/**
+ * UPDATE device
+ */
+router.put("/:id", async (req, res) => {
+  try {
+    const { device_name, ip, mac, category } = req.body;
+
+    if (category && !isValidCategory(category)) {
+      return res.status(400).json({ message: "Invalid category" });
+    }
+
+    const update = {
+      $set: {
+        ...(device_name && { device_name }),
+        ...(ip && { ip }),
+        ...(mac && { mac }),
+        ...(category && { category: String(category) })
+      }
+    };
+
+    const result = await collection.updateOne(
+      { _id: new ObjectId(req.params.id) },
+      update
+    );
+
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+
+/**
+ * DELETE device
+ */
+router.delete("/:id", async (req, res) => {
+  try {
+    await collection.deleteOne({
+      _id: new ObjectId(req.params.id)
+    });
+    res.json({ message: "Device deleted" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/**
+ * TOGGLE POWER
+ */
+router.post("/:id/power/:action", async (req, res) => {
+  try {
+    const device = await collection.findOne({
+      _id: new ObjectId(req.params.id)
+    });
+
+    if (!device)
+      return res.status(404).json({ message: "Device not found" });
+
+    // Screens & projectors only
+    if (["1", "4"].includes(device.category)) {
+      const display = new SamsungMDC(device.ip);
+      if (req.params.action === "on") await display.powerOn();
+      else await display.powerOff();
+    }
+
+    res.json({
+      state: req.params.action === "on" ? "ON" : "OFF"
+    });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

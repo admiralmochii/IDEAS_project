@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 81.29 97.64">
+  <g id="Layer_1-2" data-name="Layer 1">
+    <g>
+      <rect y="21.15" width="10" height="66.5" transform="translate(10 108.79) rotate(180)"/>
+      <rect x="60" y="57.64" width="10" height="30" transform="translate(130 145.28) rotate(180)"/>
+      <rect x="35.64" y="-17.69" width="10" height="88.09" transform="translate(-2.5 48.38) rotate(-60)"/>
+      <rect x="30" y="57.64" width="10" height="70" transform="translate(-57.64 127.64) rotate(-90)"/>
+    </g>
+  </g>
+</svg>

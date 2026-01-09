@@ -1,3 +1,4 @@
+import "../server/db/conn.mjs";
 import express, { urlencoded } from "express";
 import cors from "cors";
 import session from "express-session"
@@ -9,6 +10,7 @@ import 'http';
 
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import path from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -23,7 +25,7 @@ import devicerouter from "./routes/devicerouter.mjs";
 // CHECK ideascomment (IDC) for changes and notes
 
 const PORT = process.env.PORT || 5050;
-const hostname = "192.168.1.218" //IDC: replace with wtv static ip we are using
+const HOST = process.env.HOST || "localhost";
 
 const app = express();
 
@@ -33,7 +35,7 @@ app.use(cors( {
 }));
 app.use(express.json());
 app.use(urlencoded({extended: true}))
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, "..", "public")));
 
 // app.use(session({
 //     secret: process.env.SESSION_SECRET,
@@ -61,16 +63,14 @@ app.use("/projector", projectorrouter)
 app.use("/computer", pcrouter)
 app.use("/screens", screensrouter)
 
-import path from 'path';
-
 const options = {
     root: __dirname
 }
-app.get("/",(req,res) => {
-    res.sendFile('public/test.html', options);
-})
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "public", "test.html"));
+});
 
 //Starting the Express Server
-app.listen(PORT,hostname, () => {
-    console.log(`Server is running on port: http://${hostname}:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`Server running at http://${HOST}:${PORT}`);
 });
