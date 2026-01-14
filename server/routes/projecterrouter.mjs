@@ -3,13 +3,11 @@ import db from "../db/conn.mjs"
 import 'dotenv/config';
 import pjlink from "pjlink";
 
-// var projector = new pjlink("192.168.1.114","4352","IDEASP1")
-
-//https://github.com/sy1vain/node-pjlink direct control via nodejs, outdated?, unmaintained
-//https://github.com/Bannsaenger/ioBroker.pjlink very active, requires running ioBroker server n setting that up and all
+//https://www.npmjs.com/package/pjlink
 
 //pjlink pass = IDEASP1
 //passphrase = 12345678
+
 let collection = db.collection("devices")
 const router = express.Router();
 

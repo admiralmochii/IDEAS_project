@@ -156,14 +156,14 @@ function getLocalSubnet() {
 const router = express.Router();
 
 // Status endpoint
+// Add proper response after refresh like how many update or what not
 router.get("/refresh", async (req, res) => {
   try {
 
     const devices = await collection.find({}).toArray()
 
-    console.log(devices)
     for (let device of devices) {
-        console.log(device)
+        console.log(device.device_name)
         try {
             let device_ip = await findIpByMac(device.mac)
 
@@ -183,6 +183,32 @@ router.get("/refresh", async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+});
+
+//add refresh specific device
+router.get("/refresh/:name", async (req, res) => {
+    try {
+
+        const refreshee = req.params.name
+        const device = await collection.findOne({ name: `${refreshee}` })
+
+        console.log(device)
+        try {
+            let device_ip = await findIpByMac(device.mac)
+
+            if (device.ip != device_ip) {
+                await collection.findOneAndUpdate({ mac: `${device.mac}` }, { $set: { ip: `${device_ip}` } })
+            } else {
+                console.log("No changes needed moving on to the next device entry.")
+            }
+        } catch (err) {
+            console.log(err)
+        }
+
+        res.status(200).json({ message: "Refreshed devices successfully" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
 });
 
 router.post("/add", async (req,res) => {
@@ -220,6 +246,7 @@ router.post("/add", async (req,res) => {
     }
 
     //check if device already exists TODO
+    const timestamp = Date.now()
 
     let new_device = {
         device_name: device_name,
@@ -227,7 +254,8 @@ router.post("/add", async (req,res) => {
         ip: ip,
         password: password,
         username: username,
-        category: category
+        category: category,
+        timestamp: timestamp,
     }
 
     try {
@@ -280,11 +308,13 @@ router.put("/update", async (req,res) => {
         ip: ip,
         password: password,
         username: username,
-        category: category
+        category: category,
     }
+    
 
     try {
         await collection.updateOne({device_name: device_name}, {$set: new_device})
+        return res.status(200).json({ message: "Device updated successfully" })
     } catch(err) {
         console.error(err)
         return res.status(500).json({ message: `Error saving device: ${err}`})
@@ -293,7 +323,7 @@ router.put("/update", async (req,res) => {
 })
 
 router.delete("/delete/:device", async (req,res) => {
-    let {device_name} = String(req.params.device)
+    let device_name = String(req.params.device)
 
     var check = await collection.findOne({device_name: device_name})
 
