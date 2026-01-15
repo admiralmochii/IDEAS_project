@@ -4,6 +4,7 @@ import App from "./App";
 
 import "./styles/layout.css";   // global layout
 import "./styles/sidebar.css";  // sidebar styling
+import "./styles/device.css";   // device styling
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
