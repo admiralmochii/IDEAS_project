@@ -1,3 +1,4 @@
+import "../server/db/conn.mjs";
 import express, { urlencoded } from "express";
 import cors from "cors";
 import session from "express-session"
@@ -10,6 +11,7 @@ import 'http';
 
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import path from 'path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -55,6 +57,7 @@ app.use(cors( {
 }));
 app.use(express.json());
 app.use(urlencoded({extended: true}))
+app.use(express.static(path.join(__dirname, "..", "public")));
 
 // app.use(session({
 //     secret: process.env.SESSION_SECRET,
@@ -83,18 +86,16 @@ app.use("/computer", pcrouter)
 app.use("/screens", screensrouter)
 app.use("/schedule", schedulerouter)
 
-import path from 'path';
-
 const options = {
     root: __dirname
 }
-app.get("/",(req,res) => {
-    res.sendFile('test.html', options);
-})
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "public", "test.html"));
+});
 
 //Starting the Express Server
-app.listen(PORT,hostname, () => {
-    console.log(`Server is running on port: http://${hostname}:${PORT}`);
+app.listen(PORT, hostname, () => {
+  console.log(`Server running at http://${hostname}:${PORT}`);
 });
 
 device_refresh();

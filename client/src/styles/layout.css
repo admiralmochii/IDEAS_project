@@ -1,0 +1,28 @@
+@import './fonts.css';
+
+/* UNIVERSAL SELECTOR - Ensure font is applied everywhere */
+* {
+  font-family: 'ES Klarheit Grotesk Mono', monospace;
+}
+
+/* BASE LAYOUT */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  background: #0f0f0f;
+  font-family: 'ES Klarheit Grotesk Mono', monospace;
+}
+
+.app-layout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  background-image: url("../assets/Background.jpg");
+}
+
+.page-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.2vw;
+}

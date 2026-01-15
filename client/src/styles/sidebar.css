@@ -1,0 +1,92 @@
+/* SIDEBAR */
+.sidebar {
+  width: 20.5vw;
+  height: 100vh;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  padding: 1.2vw;
+  padding-left: 2.3vw;
+  border-right: 1px solid rgba(255,255,255,0.05);
+}
+
+/* TITLE */
+.sidebar-title {
+  font-size: 2vw;
+  margin-bottom: 1.6vw;
+  color: #ffffff;
+}
+
+/* LINKS */
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+  gap: 1.4vw;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 1.2vw;
+  padding: 1vw 1.2vw;
+  font-size: 2vw;
+  border-radius: 0.8vw;
+  color: #ffffff;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.sidebar-link img {
+  width: 3vw;
+  height: 3vw;
+  filter: invert(1);
+}
+
+.sidebar-link:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.sidebar-link.active {
+  background: rgba(255,255,255,0.12);
+  color: #ffffff;
+}
+
+/* BATCH SECTION */
+.sidebar-batch {
+  margin-top: auto;
+}
+
+.sidebar-subtitle {
+  font-size: 2vw;
+  margin-bottom: 0%;
+  color: #ffffff;
+}
+
+/* BATCH BUTTON */
+.batch-btn {
+  background: #3a3a3a;
+  border: none;
+  border-radius: 1vw;
+  padding: 1.2vw;
+  color: #fff;
+  font-size: 1.0vw;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.batch-btn:hover {
+  background: #4a4a4a;
+}
+
+.batch-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1vw;
+  margin-top: 1vw;
+}
+
+.sidebar-batch{
+  margin-top: 2vw;
+  overflow-y: auto;
+  flex-grow: 1; /* This makes it scroll */
+}

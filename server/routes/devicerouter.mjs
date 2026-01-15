@@ -210,6 +210,42 @@ router.get("/refresh/:name", async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
+/**
+ * GET all devices
+ * Optional query: ?category=1|2|3|4
+ */
+router.get("/get", async (req, res) => {
+  try {
+    const filter = {};
+    if (req.query.category) {
+      filter.category = String(req.query.category);
+    }
+
+    const devices = await collection.find(filter).toArray();
+
+    res.json(devices);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/**
+ * GET device by id
+ */
+router.get("/get/:id", async (req, res) => {
+  try {
+    const device = await collection.findOne({
+      _id: new ObjectId(req.params.id)
+    });
+
+    if (!device) {
+      return res.status(404).json({ message: "Device not found" });
+    }
+
+    res.json(device);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 router.post("/add", async (req,res) => {
@@ -331,7 +367,6 @@ router.put("/update/:id", async (req,res) => {
         category: category,
     }
     
-
     try {
         await collection.updateOne({device_name: device_name}, {$set: new_device})
         return res.status(200).json({ message: "Device updated successfully" })
