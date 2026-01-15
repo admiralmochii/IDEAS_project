@@ -25,6 +25,9 @@ export default function DevicesPage() {
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [editDevice, setEditDevice] = useState(null);
+  const [addError, setAddError] = useState(null);
+  const [editError, setEditError] = useState(null);
+  const [deleteError, setDeleteError] = useState(null);
 
   async function loadDevices() {
     setLoading(true);
@@ -54,18 +57,36 @@ export default function DevicesPage() {
   }
 
   async function handleAddDevice(data) {
-    await addDevice(data);
-    loadDevices();
+    try {
+      setAddError(null);
+      await addDevice(data);
+      setShowAdd(false);
+      loadDevices();
+    } catch (error) {
+      setAddError(error.message || "Failed to add device");
+    }
   }
 
-  async function handleEditDevice(data) {
-    await updateDevice(data);
-    loadDevices();
+  async function handleEditDevice(id, data) {
+    try {
+      setEditError(null);
+      await updateDevice(id, data);
+      setEditDevice(null);
+      loadDevices();
+    } catch (error) {
+      setEditError(error.message || "Failed to update device");
+    }
   }
 
   async function handleDeleteDevice(data) {
-    await deleteDevice(data.device_name);
-    loadDevices();
+    try {
+      setDeleteError(null);
+      await deleteDevice(data.device_name);
+      setEditDevice(null);
+      loadDevices();
+    } catch (error) {
+      setDeleteError(error.message || "Failed to delete device");
+    }
   }
   
   return (
@@ -109,7 +130,11 @@ export default function DevicesPage() {
       {showAdd && (
         <AddDeviceModal
           category={category}
-          onClose={() => setShowAdd(false)}
+          error={addError}
+          onClose={() => {
+            setShowAdd(false);
+            setAddError(null);
+          }}
           onAdd={handleAddDevice}
         />
       )}
@@ -117,7 +142,13 @@ export default function DevicesPage() {
       {editDevice && (
         <EditDeviceModal
           device={editDevice}
-          onClose={() => setEditDevice(null)}
+          editError={editError}
+          deleteError={deleteError}
+          onClose={() => {
+            setEditDevice(null);
+            setEditError(null);
+            setDeleteError(null);
+          }}
           onSave={handleEditDevice}
           onDelete={handleDeleteDevice}
         />

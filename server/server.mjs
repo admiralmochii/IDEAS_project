@@ -31,24 +31,8 @@ import { executor } from "./schedule_executor.mjs";
 
 // CHECK ideascomment (IDC) for changes and notes
 
-function getLocalIPAddress() {
-  const interfaces = os.networkInterfaces();
-  
-  for (const name of Object.keys(interfaces)) {
-    for (const iface of interfaces[name]) {
-      // Skip internal (loopback) and non-IPv4 addresses
-      if (iface.family === 'IPv4' && !iface.internal) {
-        return iface.address;
-      }
-    }
-  }
-  
-  return 'localhost'; // Fallback if no external IP found
-}
-
-
 const PORT = process.env.PORT || 5050;
-const hostname = getLocalIPAddress() //IDC: replace with wtv static ip we are using
+const hostname = "192.168.1.106"; //IDC: replace with wtv static ip we are using
 const app = express();
 
 app.use(cors( {

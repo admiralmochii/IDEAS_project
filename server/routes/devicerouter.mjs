@@ -210,6 +210,9 @@ router.get("/refresh/:name", async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
+
+});
+
 /**
  * GET all devices
  * Optional query: ?category=1|2|3|4
