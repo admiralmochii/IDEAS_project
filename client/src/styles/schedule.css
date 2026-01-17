@@ -88,8 +88,8 @@
 
 .schedule-create-btn {
   width: 100%;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: white;
+  background:#000;
+  color: #fff;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
@@ -100,8 +100,9 @@
   margin-bottom: 1rem;
 }
 
-.schedule-create-btn:hover {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+.schedule-create-btn.active {
+  background: #fff;
+  color: #000;
   transform: translateY(-2px);
 }
 
@@ -167,9 +168,8 @@
 }
 
 .schedule-category-btn.active {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
-  border-color: #3b82f6;
-  color: white;
+  background: #fff;
+  color: black;
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
@@ -312,6 +312,30 @@
   background: rgba(0, 0, 0, 0.3);
 }
 
+/* RECURRENCE TYPE BUTTONS */
+.schedule-recurrence-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.schedule-recurrence-btn {
+  padding: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  color: #aaa;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.schedule-recurrence-btn.active {
+  background: #fff;
+  color: #000;
+}
+
 /* DAYS GRID */
 .schedule-days-grid {
   display: grid;
@@ -332,14 +356,8 @@
 }
 
 .schedule-day-btn.active {
-  background: rgba(59, 130, 246, 0.3);
-  border-color: rgba(59, 130, 246, 0.5);
-  color: #93c5fd;
-}
-
-.schedule-day-btn:hover {
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(0, 0, 0, 0.3);
+  background: #fff;
+  color: #000;
 }
 
 /* SAVE BUTTON */
