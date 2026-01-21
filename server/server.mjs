@@ -65,7 +65,7 @@ app.use(express.static(path.join(__dirname, "..", "public")));
 // app.use(passport.session())
 //IDC disable passportjs for auth for now
 
-
+app.use(express.static(path.join(__dirname, '../client/dist')));
 // app.use("/users", userrouter);
 app.use("/device",devicerouter)
 app.use("/lights", lightsrouter)
@@ -77,9 +77,6 @@ app.use("/schedule", schedulerouter)
 const options = {
     root: __dirname
 }
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "public", "test.html"));
-});
 
 //---------------------- WEBSOCKET
 const server = createServer(app);
@@ -144,6 +141,16 @@ export function broadcastDevicesUpdate(devices) {
   });
 }
 //---------------------- WEBSOCKET
+
+// Catch-all ONLY for HTML5 routing (not assets)
+app.get('*', (req, res, next) => {
+  // If request is for a file (has extension), skip this
+  if (req.path.split('/').pop().includes('.')) {
+    return next();
+  }
+  res.sendFile(path.join(__dirname, '../client/dist', 'index.html'));
+});
+//hosting frontend
 
 //Starting the Express Server
 server.listen(PORT, hostname, () => {

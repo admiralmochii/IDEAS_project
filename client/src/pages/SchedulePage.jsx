@@ -227,7 +227,7 @@ export default function DeviceScheduler() {
 
 
       {loading ? (
-        <div className="schedule-loading-text">Loading devices...</div>
+        <div className="schedule-loading-text">Loading schedules...</div>
       ) : (
         <div className="schedule-container">
           {/* LEFT: Create Schedule Form */}

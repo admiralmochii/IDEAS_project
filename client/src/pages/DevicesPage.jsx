@@ -47,7 +47,7 @@ export default function DevicesPage() {
       } else if (device.category === "2") {
         // Computers
         const action = device.state === "ON" ? "shutdown" : "wake";
-        response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/computers/${action}/${device.device_name}`, {
+        response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/computer/${action}/${device.device_name}`, {
           method: "POST"
         });
       } else if (device.category === "3") {
