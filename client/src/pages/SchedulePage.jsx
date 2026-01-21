@@ -27,7 +27,7 @@ export default function DeviceScheduler() {
   const [scheduleName, setScheduleName] = useState('');
   const [selectedDays, setSelectedDays] = useState([1, 2, 3, 4, 5]);
   const [isOneTime, setIsOneTime] = useState(false);
-  const [selectedOneTimeDay, setSelectedOneTimeDay] = useState(0);
+  const [selectedOneTimeDays, setSelectedOneTimeDays] = useState([]);
 
   const days = [
     { id: 0, label: 'Sun' },
@@ -125,7 +125,7 @@ export default function DeviceScheduler() {
         scheduled_time: scheduleTime,
         devices: devicesForSchedule,
         action: action,
-        days_of_week: isOneTime ? [selectedOneTimeDay] : selectedDays,
+        days_of_week: isOneTime ? selectedOneTimeDays : selectedDays,
         repeat_weekly: !isOneTime
       };
 
@@ -144,7 +144,7 @@ export default function DeviceScheduler() {
       setAction('On');
       setSelectedDays([1, 2, 3, 4, 5]);
       setIsOneTime(false);
-      setSelectedOneTimeDay(0);
+      setSelectedOneTimeDays([]);
       setShowForm(false);
       setEditingScheduleId(null);
 
@@ -185,8 +185,8 @@ export default function DeviceScheduler() {
     setSelectedDays(schedule.days_of_week);
     setSelectedDevices(schedule.devices.map(d => d.device_id));
     setIsOneTime(!schedule.repeat_weekly);
-    if (!schedule.repeat_weekly && schedule.days_of_week.length > 0) {
-      setSelectedOneTimeDay(schedule.days_of_week[0]);
+    if (!schedule.repeat_weekly) {
+      setSelectedOneTimeDays(schedule.days_of_week);
     }
     if (schedule.devices.length > 0) {
       setSelectedCategory(schedule.devices[0].category);
@@ -227,7 +227,7 @@ export default function DeviceScheduler() {
 
 
       {loading ? (
-        <div className="schedule-loading-text">Loading devices...</div>
+        <div className="schedule-loading-text">Loading schedules...</div>
       ) : (
         <div className="schedule-container">
           {/* LEFT: Create Schedule Form */}
@@ -244,7 +244,7 @@ export default function DeviceScheduler() {
                   setSelectedDays([1, 2, 3, 4, 5]);
                   setSelectedCategory('1');
                   setIsOneTime(false);
-                  setSelectedOneTimeDay(0);
+                  setSelectedOneTimeDays([]);
                 }
                 setShowForm(!showForm);
               }}
@@ -365,21 +365,25 @@ export default function DeviceScheduler() {
 
                 {/* Days (recurring or one-time) */}
                 <div className="schedule-form-group">
-                  <label>{isOneTime ? 'Select Day' : 'Days'}</label>
+                  <label>{isOneTime ? 'Select Day(s)' : 'Days'}</label>
                   <div className="schedule-days-grid">
                     {days.map(day => (
                       <button
                         key={day.id}
                         onClick={() => {
                           if (isOneTime) {
-                            setSelectedOneTimeDay(day.id);
+                            setSelectedOneTimeDays(prev =>
+                              prev.includes(day.id)
+                                ? prev.filter(d => d !== day.id)
+                                : [...prev, day.id]
+                            );
                           } else {
                             handleDayToggle(day.id);
                           }
                         }}
                         className={`schedule-day-btn ${
                           isOneTime
-                            ? selectedOneTimeDay === day.id
+                            ? selectedOneTimeDays.includes(day.id)
                               ? 'active'
                               : ''
                             : selectedDays.includes(day.id)
@@ -396,7 +400,7 @@ export default function DeviceScheduler() {
                 {/* Save Button */}
                 <button
                   onClick={handleSaveSchedule}
-                  disabled={selectedDevices.length === 0 || (!isOneTime && selectedDays.length === 0) || !scheduleName.trim() || saving}
+                  disabled={selectedDevices.length === 0 || (isOneTime && selectedOneTimeDays.length === 0) || (!isOneTime && selectedDays.length === 0) || !scheduleName.trim() || saving}
                   className="schedule-save-btn"
                 >
                   {saving ? (editingScheduleId ? 'Updating...' : 'Saving...') : (editingScheduleId ? 'Update Schedule' : 'Save Schedule')}
@@ -432,6 +436,7 @@ export default function DeviceScheduler() {
                       <div><span>Time:</span> {schedule.scheduled_time}</div>
                       <div><span>Action:</span> <span className={`action-${schedule.action.toLowerCase()}`}>{schedule.action}</span></div>
                       <div><span>Days:</span> {schedule.days_of_week.map(d => getDayLabel(d)).join(', ')}</div>
+                      <div><span>Recurring:</span> {schedule.repeat_weekly ? 'Yes' : 'No'}</div>
                       <div><span>Devices:</span> {schedule.devices.length}</div>
                     </div>
                   </div>

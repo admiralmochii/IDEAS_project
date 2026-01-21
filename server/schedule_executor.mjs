@@ -134,8 +134,20 @@ class ScheduleExecutor {
 
       // If not repeating weekly, delete after execution
       if (!schedule.repeat_weekly) {
-        await this.db.collection('schedules').deleteOne({ _id: schedule._id });
-        console.log(`"${schedule.schedule_name}" completed and deleted (one-time schedule)`);
+        // Remove current day from days_of_week
+        const updatedDays = schedule.days_of_week.filter(d => d !== (new Date().getDay()));
+        await this.db.collection('schedules').updateOne(
+          { _id: schedule._id },
+          { $set: {
+              days_of_week: updatedDays,
+              last_executed: new Date(),
+          } }
+        );
+        console.log(`"${schedule.schedule_name}" updated (removed current day)`);
+        if (updatedDays.length < 1) {
+          await this.db.collection('schedules').deleteOne({ _id: schedule._id });
+          console.log(`"${schedule.schedule_name}" completed and deleted (one-time schedule)`);
+        }
       } else {
         // Update repeating schedule with execution results
         await this.db.collection('schedules').updateOne(
@@ -155,8 +167,20 @@ class ScheduleExecutor {
 
       // Even if execution fails, update the schedule (or delete if one-time)
       if (!schedule.repeat_weekly) {
-        await this.db.collection('schedules').deleteOne({ _id: schedule._id });
-        console.log(`"${schedule.schedule_name}" deleted after failed execution (one-time schedule)`);
+        // Remove current day from days_of_week
+        const updatedDays = schedule.days_of_week.filter(d => d !== (new Date().getDay()));
+        await this.db.collection('schedules').updateOne(
+          { _id: schedule._id },
+          { $set: {
+              days_of_week: updatedDays,
+              last_executed: new Date(),
+          } }
+        );
+        console.log(`"${schedule.schedule_name}" updated after failed execution (removed current day)`);
+        if (schedule.days_of_week.length < 1) {
+          await this.db.collection('schedules').deleteOne({ _id: schedule._id });
+          console.log(`"${schedule.schedule_name}" deleted after failed execution (one-time schedule)`);
+        }
       } else {
         await this.db.collection('schedules').updateOne(
           { _id: schedule._id },
