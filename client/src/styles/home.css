@@ -2,6 +2,8 @@
 .home-page {
   color: #ffffff;
   padding-left: 1vw;
+  overflow: hidden;
+  overflow-y: auto;
 }
 
 .home-header {
