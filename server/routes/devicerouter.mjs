@@ -275,6 +275,10 @@ router.post("/add", async (req,res) => {
         return res.status(400).json({ message: "Category is required"})
     }
 
+    if (device_name.trim() == "") {
+        return res.status(400).json({ message: "Name is required" });
+    }
+
     //category
     // 1 is screens
     // 2 is pc's
@@ -287,6 +291,20 @@ router.post("/add", async (req,res) => {
     if (category == "2") {
         if (!password || !username) {
             return res.status(400).json({ message: "PC's require the password and username of the account on the PC."})
+        }
+        
+        if (username.trim() == "") {
+            return res.status(400).json({ message: "PC's require the password and username of the account on the PC." });
+        }
+
+        if (password.trim() == "") {
+            return res.status(400).json({ message: "PC's require the password and username of the account on the PC." });
+        }
+    }
+
+    if (category == "4") {
+        if (password.trim() == "") {
+            return res.status(400).json({ message: "Projectors require the PJLINK password set on the projector." });
         }
     }
 
@@ -365,6 +383,11 @@ router.put("/update/:id", async (req,res) => {
         return res.status(400).json({ message: "Category is required"})
     }
 
+    if (device_name.trim() == "") {
+        return res.status(400).json({ message: "Name is required" });
+    }
+
+
     //category
     // 1 is screens
     // 2 is pc's
@@ -374,6 +397,20 @@ router.put("/update/:id", async (req,res) => {
     if (category == "2") {
         if (!password || !username) {
             return res.status(400).json({ message: "PC's require the password and username of the account on the PC."})
+        }
+
+        if (username.trim() == "") {
+            return res.status(400).json({ message: "PC's require the password and username of the account on the PC." });
+        }
+
+        if (password.trim() == "") {
+            return res.status(400).json({ message: "PC's require the password and username of the account on the PC." });
+        }
+    }
+
+    if (category == "4") {
+        if (password.trim() == "") {
+            return res.status(400).json({ message: "Projectors require the PJLINK password set on the projector." });
         }
     }
 

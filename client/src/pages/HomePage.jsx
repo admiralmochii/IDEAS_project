@@ -1,8 +1,11 @@
 // pages/HomePage.jsx
 import { useWebSocket } from "../contexts/WebSocketContext";
+import { useParams, useNavigate } from "react-router-dom";
+import { useState, useEffect } from 'react';
 
 export default function HomePage() {
   const { devices, connected } = useWebSocket();
+  const navigate = useNavigate()
 
   // Calculate stats from devices
   const stats = {
@@ -11,6 +14,32 @@ export default function HomePage() {
     off: devices.filter(d => d.state === "OFF").length,
     // Add more stats as needed
   };
+  async function checkAuthorized() {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/auth`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include"
+      })
+
+      const message = await response.json();
+
+      if (!response.ok) {
+        window.alert(message.message);
+        navigate("/")
+      }
+
+    } catch (err) {
+      console.log(err)
+      navigate("/login")
+    }
+  }
+
+  useEffect(() => {
+    checkAuthorized()
+  }, [])
 
   return (
     <div className="home-page">

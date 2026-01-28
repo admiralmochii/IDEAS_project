@@ -184,6 +184,10 @@
   transition: all 0.2s;
 }
 
+.schedule-input-text{
+  width: 90%;
+}
+
 .schedule-input:focus {
   outline: none;
   border-color: #3b82f6;

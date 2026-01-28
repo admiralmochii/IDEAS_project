@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from "react-router-dom";
+import { Link,useParams, useNavigate } from "react-router-dom";
 import '../styles/loginpage.css';
 
 export default function LoginPage() {
@@ -12,12 +12,29 @@ export default function LoginPage() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        // Check if user is already logged in
-        const token = localStorage.getItem('token');
-        if (token) {
-            navigate('/dashboard');
+        async function checkAuth() {
+            try {
+                const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/auth`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    credentials: "include"
+                })
+
+                const message = await response.json();
+
+                if (response.ok) {
+                    console.log("User already authorized")
+                    navigate("/home")
+                }
+
+            } catch (err) {
+                console.log(err)
+            }
         }
-    }, [navigate]);
+        checkAuth()
+    }, []);
 
     const handleChange = (e) => {
         setFormData({
@@ -34,21 +51,21 @@ export default function LoginPage() {
         setError('');
 
         try {
-            const response = await fetch('http://localhost:3001/api/auth/login', {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(formData),
+                credentials: "include"
             });
 
-            const data = await response.json();
+            const reply = await response.json();
 
             if (response.ok) {
-                localStorage.setItem('token', data.token);
-                navigate('/dashboard');
+                navigate('/home');
             } else {
-                throw new Error(data.message || 'Login failed');
+                throw new Error(reply.message || 'Login failed');
             }
         } catch (err) {
             setError(err.message || 'An error occurred. Please try again.');
@@ -96,7 +113,7 @@ export default function LoginPage() {
                     </div>
                     
                     <div className="forgot-password">
-                        <a href="#forgot-password">Forgot Password?</a>
+                        <Link to="/forgot-password">Forgot Password?</Link>
                     </div>
                     
                     <button 

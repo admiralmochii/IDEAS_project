@@ -1,9 +1,31 @@
+import { Navigate, useNavigate } from "react-router-dom";
+
 export default function LogoutModal({ onClose }) {
-  function handleLogout() {
-    // Add your logout logic here
-    // For example: clear auth tokens, redirect to login, etc.
-    console.log("Logging out...");
-    onClose();
+  const navigate = useNavigate()
+  async function handleLogout() {
+    try {
+      console.log("Logging out...");
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/logout`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include"
+      })
+
+      const message = await response.json();
+
+      if (!response.ok) {
+        window.alert(message.message);
+        return
+      }
+
+      window.alert(message.message)
+      onClose();
+      navigate("/")
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   return (

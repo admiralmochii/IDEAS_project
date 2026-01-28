@@ -4,8 +4,20 @@ import { ObjectId } from "mongodb";
 import { generate_password } from "../auth/passwordauth.mjs";
 import passport from "passport";
 import 'dotenv/config';
+import nodemailer from 'nodemailer'
 
 const router = express.Router();
+
+const transporter = nodemailer.createTransport({
+    service: "Gmail",
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+        user: "ideaslabiot@gmail.com",
+        pass: process.env.GOOG_APP_PASSWORD
+    }
+})
 
 //----- GET ROUTES -----//
 //get list of users in db
@@ -48,7 +60,7 @@ router.get("/auth", async (req,res) => {
         console.log("is authed", req.isAuthenticated())
 
         if (req.isAuthenticated()) {
-            return res.status(200).json({ message: "User is authorized.", name: req.user.name })
+            return res.status(200).json({ message: "User is authorized.", id: req.user._id.toString(), name: req.user.name, email: req.user.email })
         } else {
             return res.status(401).json({ message: "You are not authorized to access this page!" })
         }
@@ -149,10 +161,6 @@ router.post('/login', async (req, res) => {
             if (!member_admin) {
                 return res.status(401).json({ message: "No user with this email exists!" })
             }
-
-            if (member_admin.hash == null && member_admin.salt == null) {
-                return res.status(401).json({ message: "This user is not an admin!" })
-            }
         }
 
         passport.authenticate("local", (err, user, info) => {
@@ -179,67 +187,178 @@ router.post('/login', async (req, res) => {
     }
 });
 
+//---- forget password routes ----//
+router.post("/forgot-password", async (req, res) => {
+    try {
+        const target_email = req.body.email;
+        if (target_email) {
+            let collection = await db.collection("users");
+
+            const user = await collection.findOne({ email: target_email });
+
+            if (!user) {
+                return res.status(401).json({ message: "No user with this email exists!" });
+            }
+
+            let record_collection = await db.collection("reset_req");
+
+            const reset_request = {
+                id: user._id,
+                email: user.email
+            };
+
+            const record_response = await record_collection.insertOne(reset_request);
+
+            // Fix: Use insertedId, not the whole response object
+            const resetlink = `http://192.168.1.104:5050/reset-password/${record_response.insertedId}`;
+
+            const mailOptions = {
+                from: "ideaslabiot@gmail.com",
+                to: `${target_email}`,
+                subject: "Reset Password",
+                text: `You have requested a password reset for your account. Click here: ${resetlink}`
+            };
+
+            transporter.sendMail(mailOptions);
+
+            return res.status(200).json({ message: "Success, reset password email sent!" });
+            
+        } else {
+            return res.status(400).json({ message: "Please input an email!" });
+        }
+    } catch (err) {
+        console.error("Error sending reset email:", err);
+        return res.status(500).json({ message: "Server error" });
+    }
+});
+
+router.get("/verify-reset-request/:resetId", async (req,res) => {
+    try {
+        const resetId = req.params.resetId;
+        let reset_collection = await db.collection("reset_req");
+
+        const reset_request = await reset_collection.findOne({ _id: new ObjectId(resetId) });
+
+        if (!reset_request) {
+            return res.status(404).json({ message: "Invalid or expired reset link" });
+        }
+
+        return res.status(200).json({ message: "Valid reset request" });
+    } catch (err) {
+        console.error("Error validating reset token:", err);
+        return res.status(500).json({ message: "Server error" });
+    }
+})
+
+router.post("/reset-password/:resetId", async (req, res) => {
+    try {
+        const resetId = req.params.resetId;
+        const newPassword = req.body.password;
+
+        if (!newPassword) {
+            return res.status(400).json({ message: "Password is required" });
+        }
+
+        let reset_collection = await db.collection("reset_req");
+        const reset_request = await reset_collection.findOne({ _id: new ObjectId(resetId) });
+
+        if (!reset_request) {
+            return res.status(404).json({ message: "Invalid or expired reset link" });
+        }
+
+        const salt_hash = generate_password(newPassword);
+
+        // Update user password
+        let users_collection = await db.collection("users");
+        await users_collection.updateOne(
+            { _id: new ObjectId(reset_request.id) },
+            {
+                $set: {
+                    salt: salt_hash.salt,
+                    hash: salt_hash.hash
+                }
+            }
+        );
+
+        // Delete the reset request
+        await reset_collection.deleteOne({ _id: new ObjectId(resetId) });
+
+        return res.status(200).json({ message: "Password reset successfully" });
+    } catch (err) {
+        console.error("Error resetting password:", err);
+        return res.status(500).json({ message: "Server error" });
+    }
+});
+
+
 //----- PATCH ROUTES -----//
 
 //update user details
-// router.patch("/:id", async (req,res) => {
-//     try {
-//         if (req.isAuthenticated()) {
-//             let updated_data
-//             const query = { _id: new ObjectId(req.params.id) };
+router.patch("/:id", async (req,res) => {
+    if(!req.isAuthenticated()) {
+        return res.status(400).json({ message: "You are not authorized to do this action!"})
+    }
+    try {
+            let updated_data
+            const query = { _id: new ObjectId(req.params.id) };
 
-//             updated_data = {
-//                 $set: {
-//                     name:req.body.name,
-//                     email:req.body.email
-//                 }
-//             }
+            updated_data = {
+                $set: {
+                    name:req.body.name,
+                    email:req.body.email
+                }
+            }
 
-//             if (req.body.password) {
-//                 const {salt, hash} = generate_password(req.body.password)
-//                 updated_data.$set.salt = salt;
-//                 updated_data.$set.hash = hash
-//             } 
+            if (req.body.name == "" || req.body.name == null || (req.body.name).trim() == "") {
+                return res.status(400).json({ message: "Please input a name!"})
+            }
 
-//             //updating of password only can be done by admin,
-//             //the ui will not have the current password available as the password is hashed and salted and then
-//             //stored in the database for safety purposes (you cant unencrypt the password as that is how hashing and salting works)
+            if (req.body.email == "" || req.body.email == null || (req.body.email).trim() == "") {
+                return res.status(400).json({ message: "Please input a email!"})
+            }
 
-//             let collection = await db.collection("users");
+            if (req.body.password) {
+                const {salt, hash} = generate_password(req.body.password)
+                updated_data.$set.salt = salt;
+                updated_data.$set.hash = hash
+            } 
+
+            //updating of password only can be done by admin,
+            //the ui will not have the current password available as the password is hashed and salted and then
+            //stored in the database for safety purposes (you cant unencrypt the password as that is how hashing and salting works)
+
+            let collection = await db.collection("users");
             
-//             let check_record = await collection.findOne(query)
+            let check_record = await collection.findOne(query)
 
-//             if ((check_record.salt == null || check_record.hash == null) && req.body.password == null) {
-//                 return res.status(400).json({ message: "User roles require a password!"})
-//             }
+            if ((check_record.salt == null || check_record.hash == null) && req.body.password == null) {
+                return res.status(400).json({ message: "User roles require a password!"})
+            }
 
 
-//             let check_duplicate_records = await collection.find().toArray()
+            let check_duplicate_records = await collection.find().toArray()
 
-//             for (let i = 0; i < check_duplicate_records.length; i++) {
-//                 if (check_duplicate_records[i].email == req.body.email) {
-//                     if (check_duplicate_records[i]._id.toString() == query._id.toString()) {
-//                         continue
-//                     } else {
-//                         return res.status(400).json({message: "A member with this email already exists!"})
-//                     }
-//                 }
-//             }
+            for (let i = 0; i < check_duplicate_records.length; i++) {
+                if (check_duplicate_records[i].email == req.body.email) {
+                    if (check_duplicate_records[i]._id.toString() == query._id.toString()) {
+                        continue
+                    } else {
+                        return res.status(400).json({message: "A member with this email already exists!"})
+                    }
+                }
+            }
 
-//             await collection.updateOne(query, updated_data);
+            await collection.updateOne(query, updated_data);
 
-//             return res.status(200).json({
-//                 message: "Member updated successfully!"
-//             });
-//         } else {
-//             return res.status(401).json({message: "You are not authorized to do this action!"})
-//         }
-//     } catch(err) {
-//         console.error("Error updating member: ", err)
-//         return res.status(500).json({ message: err.message})
-//     }
+            return res.status(200).json({
+                message: "Member updated successfully!"
+            });
+    } catch(err) {
+        console.error("Error updating member: ", err)
+        return res.status(500).json({ message: err.message})
+    }
     
-// });
+});
 
 //----- DELETE ROUTES -----//
 

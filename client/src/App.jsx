@@ -7,6 +7,8 @@ import DevicesPage from "./pages/DevicesPage";
 import SchedulePage from "./pages/SchedulePage";
 import UserPage from "./pages/UserPage";
 import LoginPage from "./pages/LoginPage";
+import ForgotPasswordPage from "./pages/ForgetPassPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 export default function App() {
   return (
@@ -22,6 +24,8 @@ export default function App() {
             <Route path="/user" element={<UserPage/>} />
           </Route>
           <Route path ="/login" element={<LoginPage/>}/>
+          <Route path="/forgot-password" element={<ForgotPasswordPage/>}/>
+          <Route path="/reset-password/:resetId" element={<ResetPasswordPage />} />
         </Routes>
       </WebSocketProvider>
     </BrowserRouter>

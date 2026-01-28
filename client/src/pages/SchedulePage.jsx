@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getDevicesByCategory } from '../services/deviceapi.mjs';
 import { createSchedule, getSchedules, deleteSchedule, updateSchedule } from '../services/scheduleapi.mjs';
+import { useParams, useNavigate } from "react-router-dom";
 import '../styles/schedule.css';
 
 const CATEGORY_LABELS = {
@@ -38,6 +39,8 @@ export default function DeviceScheduler() {
     { id: 5, label: 'Fri' },
     { id: 6, label: 'Sat' }
   ];
+
+  const navigate = useNavigate();
 
   // Load all devices and schedules on mount
   useEffect(() => {
@@ -211,6 +214,34 @@ export default function DeviceScheduler() {
     })
     .filter(Boolean);
 
+
+  async function checkAuthorized() {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/auth`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include"
+      })
+
+      const message = await response.json();
+
+      if (!response.ok) {
+        window.alert(message.message);
+        navigate("/")
+      }
+
+    } catch (err) {
+      console.log(err)
+      navigate("/login")
+    }
+  }
+
+  useEffect(() => {
+    checkAuthorized()
+  }, [])
+
   return (
     <div className="schedule-page">
       <h2 className="schedule-header">Schedules</h2>
@@ -264,7 +295,7 @@ export default function DeviceScheduler() {
                     value={scheduleName}
                     onChange={(e) => setScheduleName(e.target.value)}
                     placeholder="e.g., Morning Lights"
-                    className="schedule-input"
+                    className="schedule-input schedule-input-text"
                   />
                 </div>
 

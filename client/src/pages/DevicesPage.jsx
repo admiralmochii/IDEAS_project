@@ -111,6 +111,33 @@ export default function DevicesPage() {
       setDeleteError(error.message || "Failed to delete device");
     }
   }
+
+  async function checkAuthorized() {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/users/auth`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include"
+      })
+
+      const message = await response.json();
+
+      if (!response.ok) {
+        window.alert(message.message);
+        navigate("/")
+      }
+
+    } catch (err) {
+      console.log(err)
+      navigate("/login")
+    }
+  }
+  
+  useEffect(() => {
+    checkAuthorized()
+  }, [])
   
   return (
     <div className="devices-page">
