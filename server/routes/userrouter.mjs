@@ -91,60 +91,60 @@ router.get("/:id", async (req,res) => {
 
 //----- POST ROUTES -----//
 
-//add new user
-// router.post("/register", async (req,res) => {
-//     try {
-//         req.isAuthenticated()
-//         if (true) {
-//             let salt
-//             let hash
+// add new user
+router.post("/register", async (req,res) => {
+    try {
+        req.isAuthenticated()
+        if (true) {
+            let salt
+            let hash
 
-//             //add null checkers and other data validation here
-//             //name, password, email
+            //add null checkers and other data validation here
+            //name, password, email
 
-//             //db does not save password as is (unsafe) saves as hash and salt, req.body.password is still here as it is what the user will enter
-//             if (req.body.password) {
-//                 if (req.body.password !== null) {
-//                     const salt_hash = generate_password(req.body.password)
+            //db does not save password as is (unsafe) saves as hash and salt, req.body.password is still here as it is what the user will enter
+            if (req.body.password) {
+                if (req.body.password !== null) {
+                    const salt_hash = generate_password(req.body.password)
 
-//                     salt = salt_hash.salt
-//                     hash = salt_hash.hash
-//                 }
-//             } else {
-//                 return res.status(400).json({ message: "Users require passwords!" })
-//             }
+                    salt = salt_hash.salt
+                    hash = salt_hash.hash
+                }
+            } else {
+                return res.status(400).json({ message: "Users require passwords!" })
+            }
 
-//             let new_user = {
-//                 name: req.body.name,
-//                 email: req.body.email,
-//                 hash: hash,
-//                 salt: salt
-//             };
+            let new_user = {
+                name: req.body.name,
+                email: req.body.email,
+                hash: hash,
+                salt: salt
+            };
 
-//             let collection = await db.collection("users");
+            let collection = await db.collection("users");
 
-//             let check_duplicate_records = await collection.find().toArray()
+            let check_duplicate_records = await collection.find().toArray()
 
-//             for (let i = 0; i < check_duplicate_records.length; i++) {
-//                 if (check_duplicate_records[i].email == req.body.email) {
-//                     return res.status(400).json({message: "A member with this email already exists!"})
-//                 }
-//             }
+            for (let i = 0; i < check_duplicate_records.length; i++) {
+                if (check_duplicate_records[i].email == req.body.email) {
+                    return res.status(400).json({message: "A member with this email already exists!"})
+                }
+            }
 
-//             await collection.insertOne(new_user)
+            await collection.insertOne(new_user)
 
-//             return res.status(201).json({
-//                 message: "Member added successfully!"
-//             });
-//         } else {
-//             return res.status(401).json({message: "You are not authorized to do this action!"})
-//         }
+            return res.status(201).json({
+                message: "Member added successfully!"
+            });
+        } else {
+            return res.status(401).json({message: "You are not authorized to do this action!"})
+        }
         
-//     }catch (err) {
-//         console.error("Error adding new member: ", err)
-//         return res.status(500).json({ message: err.message})
-//     }
-// });
+    }catch (err) {
+        console.error("Error adding new member: ", err)
+        return res.status(500).json({ message: err.message})
+    }
+});
 
 //login user
 router.post('/login', async (req, res) => { 
@@ -210,7 +210,7 @@ router.post("/forgot-password", async (req, res) => {
             const record_response = await record_collection.insertOne(reset_request);
 
             // Fix: Use insertedId, not the whole response object
-            const resetlink = `http://192.168.1.104:5050/reset-password/${record_response.insertedId}`;
+            const resetlink = `http://${process.env.HOST}:5050/reset-password/${record_response.insertedId}`;
 
             const mailOptions = {
                 from: "ideaslabiot@gmail.com",

@@ -1,5 +1,5 @@
 // contexts/WebSocketContext.jsx
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useDeviceWebSocket } from '../hooks/useDeviceWebSocket.js';
 
 const WebSocketContext = createContext();
@@ -8,6 +8,7 @@ export function WebSocketProvider({ children }) {
   const [devices, setDevices] = useState([]);
 
   const handleDeviceUpdate = useCallback((updatedDevices, updateType) => {
+    console.log("on mount device data update")
     if (updateType === "initial") {
       setDevices(updatedDevices);
     } else {
@@ -29,6 +30,30 @@ export function WebSocketProvider({ children }) {
   }, []);
 
   const { connected } = useDeviceWebSocket(handleDeviceUpdate);
+
+   useEffect(() => {
+    async function fetchInitialDevices() {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/device/getall`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const deviceData = await response.json();
+        console.log('✅ Fetched devices:', deviceData.length);
+        handleDeviceUpdate(deviceData, "initial");
+      } catch (error) {
+        console.error('❌ Error fetching initial devices:', error);
+        setIsLoading(false);
+      }
+    }
+
+    fetchInitialDevices();
+  }, []); // Only run once on mount
+
 
   return (
     <WebSocketContext.Provider value={{ devices, connected }}>

@@ -1,7 +1,17 @@
-import { useState } from "react";
+import { useState, useRef  } from "react";
 import CustomSelect from "./CustomSelect.jsx";
 
 export default function AddDeviceModal({ category, error, onClose, onAdd }) {
+
+  const popupContentRef = useRef(null);
+
+  if ((error) && popupContentRef.current) {
+    popupContentRef.current.scrollTo({
+      top: 0,
+      behaviour: 'smooth'
+    });
+  }
+  
   const [form, setForm] = useState({
     device_name: "",
     ip: "",
@@ -26,7 +36,7 @@ export default function AddDeviceModal({ category, error, onClose, onAdd }) {
     <div className="popup">
       <div className="popup-content-padding">
         <h2 className="popup-header">New Device</h2>
-        <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+        <div className="popup-content" ref={popupContentRef} onClick={(e) => e.stopPropagation()}>
           {error && <div className="error-message">{error}</div>}
 
           <h4 className="popup-label popup-top-label">Device Name</h4>

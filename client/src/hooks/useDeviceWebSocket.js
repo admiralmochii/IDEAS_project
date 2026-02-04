@@ -12,7 +12,7 @@ export function useDeviceWebSocket(onDeviceUpdate) {
     onDeviceUpdateRef.current = onDeviceUpdate;
   }, [onDeviceUpdate]);
 
-  useEffect(() => {
+  useEffect(() => { 
     let isMounted = true;
     
     function connect() {

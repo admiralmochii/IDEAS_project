@@ -1,7 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import CustomSelect from "./CustomSelect.jsx";
 
 export default function EditDeviceModal({ device, editError, deleteError, onClose, onSave, onDelete }) {
+
+  const popupContentRef = useRef(null);
+
+  if ((editError || deleteError) && popupContentRef.current) {
+    popupContentRef.current.scrollTo({
+      top: 0,
+      behaviour: 'smooth'
+    });
+  }
+
   const [form, setForm] = useState({
     device_name: device.device_name,
     ip: device.ip || "",
@@ -27,7 +37,7 @@ export default function EditDeviceModal({ device, editError, deleteError, onClos
     <div className="popup">
       <div className="popup-content-padding">
         <h2 className="popup-header">Edit Device</h2>
-        <div className="popup-content">
+        <div className="popup-content" ref={popupContentRef}>
           
           {editError && <div className="error-message">{editError}</div>}
           {deleteError && <div className="error-message">{deleteError}</div>}

@@ -158,6 +158,16 @@ function getLocalSubnet() {
 
 const router = express.Router();
 
+router.get("/getall", async (req, res) => {
+  try {
+    const devices = await db.collection("devices").find({}).toArray();
+    res.json(devices);
+  } catch (error) {
+    console.error("Error fetching devices:", error);
+    res.status(500).json({ error: "Failed to fetch devices" });
+  }
+});
+
 // Status endpoint
 // Add proper response after refresh like how many update or what not
 router.get("/refresh", async (req, res) => {
@@ -279,6 +289,10 @@ router.post("/add", async (req,res) => {
         return res.status(400).json({ message: "Name is required" });
     }
 
+    if (device_name.length > 13) {
+        return res.status(400).json({ message: "Name cannot be longer than 13 characters" })
+    }
+
     //category
     // 1 is screens
     // 2 is pc's
@@ -333,7 +347,7 @@ router.post("/add", async (req,res) => {
         username: username,
         category: category,
         timestamp: timestamp,
-        state: "Off"
+        state: "PENDING"
     }
 
     try {
@@ -387,6 +401,9 @@ router.put("/update/:id", async (req,res) => {
         return res.status(400).json({ message: "Name is required" });
     }
 
+    if (device_name.length > 13) {
+        return res.status(400).json({ message: "Name cannot be longer than 13 characters" })
+    }
 
     //category
     // 1 is screens

@@ -78,7 +78,7 @@ export default function EditUserModal({ onClose, currentName, currentEmail, user
   };
 
   return (
-    <div className="popup" onClick={onClose}>
+    <div className="popup">
       <div className="popup-content-edit" onClick={(e) => e.stopPropagation()}>
         <h2 className="popup-header">Edit User Details</h2>
         

@@ -263,219 +263,221 @@ export default function DeviceScheduler() {
       {loading ? (
         <div className="schedule-loading-text">Loading schedules...</div>
       ) : (
-        <div className="schedule-container">
-          {/* LEFT: Create Schedule Form */}
-          <div className="schedule-form-section">
-            <button 
-              className={`schedule-create-btn ${showForm ? 'active' : ''}`}
-              onClick={() => {
-                if (editingScheduleId) {
-                  setEditingScheduleId(null);
-                  setScheduleName('');
-                  setSelectedDevices([]);
-                  setScheduleTime('18:00');
-                  setAction('On');
-                  setSelectedDays([1, 2, 3, 4, 5]);
-                  setSelectedCategory('1');
-                  setIsOneTime(false);
-                  setSelectedOneTimeDays([]);
-                }
-                setShowForm(!showForm);
-              }}
-            >
-              {showForm ? '✕ Close' : '+ Create Schedule'}
-            </button>
+        <div className="scrollable-holder">
+          <div className="schedule-container">
+            {/* LEFT: Create Schedule Form */}
+            <div className="schedule-form-section">
+              <button 
+                className={`schedule-create-btn ${showForm ? 'active' : ''}`}
+                onClick={() => {
+                  if (editingScheduleId) {
+                    setEditingScheduleId(null);
+                    setScheduleName('');
+                    setSelectedDevices([]);
+                    setScheduleTime('18:00');
+                    setAction('On');
+                    setSelectedDays([1, 2, 3, 4, 5]);
+                    setSelectedCategory('1');
+                    setIsOneTime(false);
+                    setSelectedOneTimeDays([]);
+                  }
+                  setShowForm(!showForm);
+                }}
+              >
+                {showForm ? '✕ Close' : '+ Create Schedule'}
+              </button>
 
-            {showForm && (
-              <div className="schedule-form-wrapper">
-                <h3>{editingScheduleId ? 'Edit Schedule' : 'New Schedule'}</h3>
+              {showForm && (
+                <div className="schedule-form-wrapper">
+                  <h3>{editingScheduleId ? 'Edit Schedule' : 'New Schedule'}</h3>
 
-                {/* Schedule Name */}
-                <div className="schedule-form-group">
-                  <label>Schedule Name</label>
-                  <input
-                    type="text"
-                    value={scheduleName}
-                    onChange={(e) => setScheduleName(e.target.value)}
-                    placeholder="e.g., Morning Lights"
-                    className="schedule-input schedule-input-text"
-                  />
-                </div>
+                  {/* Schedule Name */}
+                  <div className="schedule-form-group">
+                    <label>Schedule Name</label>
+                    <input
+                      type="text"
+                      value={scheduleName}
+                      onChange={(e) => setScheduleName(e.target.value)}
+                      placeholder="e.g., Morning Lights"
+                      className="schedule-input schedule-input-text"
+                    />
+                  </div>
 
-                {/* Category Selection */}
-                <div className="schedule-form-group">
-                  <label>Category</label>
-                  <div className="schedule-category-buttons">
-                    {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                  {/* Category Selection */}
+                  <div className="schedule-form-group">
+                    <label>Category</label>
+                    <div className="schedule-category-buttons">
+                      {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                        <button
+                          key={key}
+                          className={`schedule-category-btn ${selectedCategory === key ? 'active' : ''}`}
+                          onClick={() => setSelectedCategory(key)}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Device Selection */}
+                  <div className="schedule-form-group">
+                    <label>Select Devices ({selectedDevices.length})</label>
+                    <div className="schedule-device-list">
+                      {devices.length === 0 ? (
+                        <p className="schedule-empty-text">No devices in this category</p>
+                      ) : (
+                        devices.map(device => (
+                          <label key={device._id} className="schedule-device-item">
+                            <input
+                              type="checkbox"
+                              checked={selectedDevices.includes(device._id)}
+                              onChange={() => handleDeviceToggle(device._id)}
+                            />
+                            <span>{device.device_name || device.name}</span>
+                          </label>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Selected Devices */}
+                  {selectedDevices.length > 0 && (
+                    <div className="schedule-selected-devices">
+                      {selectedDeviceNames.map((name, idx) => (
+                        <span key={idx} className="schedule-device-tag">{name}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Action */}
+                  <div className="schedule-form-group">
+                    <label>Action</label>
+                    <div className="schedule-action-buttons">
                       <button
-                        key={key}
-                        className={`schedule-category-btn ${selectedCategory === key ? 'active' : ''}`}
-                        onClick={() => setSelectedCategory(key)}
+                        onClick={() => setAction('On')}
+                        className={`schedule-action-btn ${action === 'On' ? 'active on' : ''}`}
                       >
-                        {label}
+                        Turn On
                       </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Device Selection */}
-                <div className="schedule-form-group">
-                  <label>Select Devices ({selectedDevices.length})</label>
-                  <div className="schedule-device-list">
-                    {devices.length === 0 ? (
-                      <p className="schedule-empty-text">No devices in this category</p>
-                    ) : (
-                      devices.map(device => (
-                        <label key={device._id} className="schedule-device-item">
-                          <input
-                            type="checkbox"
-                            checked={selectedDevices.includes(device._id)}
-                            onChange={() => handleDeviceToggle(device._id)}
-                          />
-                          <span>{device.device_name || device.name}</span>
-                        </label>
-                      ))
-                    )}
-                  </div>
-                </div>
-
-                {/* Selected Devices */}
-                {selectedDevices.length > 0 && (
-                  <div className="schedule-selected-devices">
-                    {selectedDeviceNames.map((name, idx) => (
-                      <span key={idx} className="schedule-device-tag">{name}</span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Action */}
-                <div className="schedule-form-group">
-                  <label>Action</label>
-                  <div className="schedule-action-buttons">
-                    <button
-                      onClick={() => setAction('On')}
-                      className={`schedule-action-btn ${action === 'On' ? 'active on' : ''}`}
-                    >
-                      Turn On
-                    </button>
-                    <button
-                      onClick={() => setAction('Off')}
-                      className={`schedule-action-btn ${action === 'Off' ? 'active off' : ''}`}
-                    >
-                      Turn Off
-                    </button>
-                  </div>
-                </div>
-
-                {/* Time */}
-                <div className="schedule-form-group">
-                  <label>Time</label>
-                  <input
-                    type="time"
-                    value={scheduleTime}
-                    onChange={(e) => setScheduleTime(e.target.value)}
-                    className="schedule-input"
-                  />
-                </div>
-
-                {/* Recurrence Type */}
-                <div className="schedule-form-group">
-                  <label>Schedule Type</label>
-                  <div className="schedule-recurrence-buttons">
-                    <button
-                      onClick={() => setIsOneTime(false)}
-                      className={`schedule-recurrence-btn ${!isOneTime ? 'active' : ''}`}
-                    >
-                      Recurring
-                    </button>
-                    <button
-                      onClick={() => setIsOneTime(true)}
-                      className={`schedule-recurrence-btn ${isOneTime ? 'active' : ''}`}
-                    >
-                      One-Time
-                    </button>
-                  </div>
-                </div>
-
-                {/* Days (recurring or one-time) */}
-                <div className="schedule-form-group">
-                  <label>{isOneTime ? 'Select Day(s)' : 'Days'}</label>
-                  <div className="schedule-days-grid">
-                    {days.map(day => (
                       <button
-                        key={day.id}
-                        onClick={() => {
-                          if (isOneTime) {
-                            setSelectedOneTimeDays(prev =>
-                              prev.includes(day.id)
-                                ? prev.filter(d => d !== day.id)
-                                : [...prev, day.id]
-                            );
-                          } else {
-                            handleDayToggle(day.id);
-                          }
-                        }}
-                        className={`schedule-day-btn ${
-                          isOneTime
-                            ? selectedOneTimeDays.includes(day.id)
+                        onClick={() => setAction('Off')}
+                        className={`schedule-action-btn ${action === 'Off' ? 'active off' : ''}`}
+                      >
+                        Turn Off
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Time */}
+                  <div className="schedule-form-group">
+                    <label>Time</label>
+                    <input
+                      type="time"
+                      value={scheduleTime}
+                      onChange={(e) => setScheduleTime(e.target.value)}
+                      className="schedule-input"
+                    />
+                  </div>
+
+                  {/* Recurrence Type */}
+                  <div className="schedule-form-group">
+                    <label>Schedule Type</label>
+                    <div className="schedule-recurrence-buttons">
+                      <button
+                        onClick={() => setIsOneTime(false)}
+                        className={`schedule-recurrence-btn ${!isOneTime ? 'active' : ''}`}
+                      >
+                        Recurring
+                      </button>
+                      <button
+                        onClick={() => setIsOneTime(true)}
+                        className={`schedule-recurrence-btn ${isOneTime ? 'active' : ''}`}
+                      >
+                        One-Time
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Days (recurring or one-time) */}
+                  <div className="schedule-form-group">
+                    <label>{isOneTime ? 'Select Day(s)' : 'Days'}</label>
+                    <div className="schedule-days-grid">
+                      {days.map(day => (
+                        <button
+                          key={day.id}
+                          onClick={() => {
+                            if (isOneTime) {
+                              setSelectedOneTimeDays(prev =>
+                                prev.includes(day.id)
+                                  ? prev.filter(d => d !== day.id)
+                                  : [...prev, day.id]
+                              );
+                            } else {
+                              handleDayToggle(day.id);
+                            }
+                          }}
+                          className={`schedule-day-btn ${
+                            isOneTime
+                              ? selectedOneTimeDays.includes(day.id)
+                                ? 'active'
+                                : ''
+                              : selectedDays.includes(day.id)
                               ? 'active'
                               : ''
-                            : selectedDays.includes(day.id)
-                            ? 'active'
-                            : ''
-                        }`}
-                      >
-                        {day.label}
-                      </button>
-                    ))}
+                          }`}
+                        >
+                          {day.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
+
+                  {/* Save Button */}
+                  <button
+                    onClick={handleSaveSchedule}
+                    disabled={selectedDevices.length === 0 || (isOneTime && selectedOneTimeDays.length === 0) || (!isOneTime && selectedDays.length === 0) || !scheduleName.trim() || saving}
+                    className="schedule-save-btn"
+                  >
+                    {saving ? (editingScheduleId ? 'Updating...' : 'Saving...') : (editingScheduleId ? 'Update Schedule' : 'Save Schedule')}
+                  </button>
                 </div>
-
-                {/* Save Button */}
-                <button
-                  onClick={handleSaveSchedule}
-                  disabled={selectedDevices.length === 0 || (isOneTime && selectedOneTimeDays.length === 0) || (!isOneTime && selectedDays.length === 0) || !scheduleName.trim() || saving}
-                  className="schedule-save-btn"
-                >
-                  {saving ? (editingScheduleId ? 'Updating...' : 'Saving...') : (editingScheduleId ? 'Update Schedule' : 'Save Schedule')}
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* RIGHT: Schedules List */}
-          <div className="schedule-list-section">
-            <h3>Active Schedules ({schedules.length})</h3>
-            <div className="schedule-list">
-              {schedules.length === 0 ? (
-                <p className="schedule-empty-text">No schedules created yet</p>
-              ) : (
-                schedules.map(schedule => (
-                  <div key={schedule._id} className="schedule-list-item" onClick={() => handleEditSchedule(schedule)} style={{cursor: 'pointer'}}>
-                    <div className="schedule-item-header">
-                      <div className="schedule-item-title">{schedule.schedule_name}</div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteSchedule(schedule._id);
-                        }}
-                        className="schedule-delete-btn"
-                        title="Delete schedule"
-                      >
-                        ✕
-                      </button>
-                    </div>
-
-                    <div className="schedule-item-details">
-                      <div><span>Time:</span> {schedule.scheduled_time}</div>
-                      <div><span>Action:</span> <span className={`action-${schedule.action.toLowerCase()}`}>{schedule.action}</span></div>
-                      <div><span>Days:</span> {schedule.days_of_week.map(d => getDayLabel(d)).join(', ')}</div>
-                      <div><span>Recurring:</span> {schedule.repeat_weekly ? 'Yes' : 'No'}</div>
-                      <div><span>Devices:</span> {schedule.devices.length}</div>
-                    </div>
-                  </div>
-                ))
               )}
+            </div>
+
+            {/* RIGHT: Schedules List */}
+            <div className="schedule-list-section">
+              <h3>Active Schedules ({schedules.length})</h3>
+              <div className="schedule-list">
+                {schedules.length === 0 ? (
+                  <p className="schedule-empty-text">No schedules created yet</p>
+                ) : (
+                  schedules.map(schedule => (
+                    <div key={schedule._id} className="schedule-list-item" onClick={() => handleEditSchedule(schedule)} style={{cursor: 'pointer'}}>
+                      <div className="schedule-item-header">
+                        <div className="schedule-item-title">{schedule.schedule_name}</div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSchedule(schedule._id);
+                          }}
+                          className="schedule-delete-btn"
+                          title="Delete schedule"
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      <div className="schedule-item-details">
+                        <div><span>Time:</span> {schedule.scheduled_time}</div>
+                        <div><span>Action:</span> <span className={`action-${schedule.action.toLowerCase()}`}>{schedule.action}</span></div>
+                        <div><span>Days:</span> {schedule.days_of_week.map(d => getDayLabel(d)).join(', ')}</div>
+                        <div><span>Recurring:</span> {schedule.repeat_weekly ? 'Yes' : 'No'}</div>
+                        <div><span>Devices:</span> {schedule.devices.length}</div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
           </div>
         </div>

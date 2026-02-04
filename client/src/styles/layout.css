@@ -23,8 +23,14 @@ html, body, #root {
 
 .page-content {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: hidden;
   padding: 1.2vw;
+}
+
+.scrollable-holder {
+  overflow: hidden;
+  overflow-y: scroll;
+  height: 50vw;
 }
 
 /* USER ICONS - Global */

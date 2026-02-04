@@ -163,26 +163,28 @@ export default function DevicesPage() {
       </div>
 
       {/* DEVICE GRID */}
-      <div className="device-grid">
-        <div className="device-card off add-card" onClick={() => setShowAdd(true)}>
-          <div className="add-icon">+</div>
-          <span>Add device</span>
+      <div className="scrollable-holder">
+        <div className="device-grid">
+          <div className="device-card off add-card" onClick={() => setShowAdd(true)}>
+            <div className="add-icon">+</div>
+            <span>Add device</span>
+          </div>
+          
+          {devices.length === 0 ? (
+            <div className="loading-text">No devices found</div>
+          ) : (
+            devices.map(device => (
+              <DeviceCard
+                key={device._id}
+                device={device}
+                onToggle={() => handleToggle(device)}
+                onEdit={() => setEditDevice(device)}
+              />
+            ))
+          )}
         </div>
-        
-        {devices.length === 0 ? (
-          <div className="loading-text">No devices found</div>
-        ) : (
-          devices.map(device => (
-            <DeviceCard
-              key={device._id}
-              device={device}
-              onToggle={() => handleToggle(device)}
-              onEdit={() => setEditDevice(device)}
-            />
-          ))
-        )}
       </div>
-
+      
       {showAdd && (
         <AddDeviceModal
           category={category}

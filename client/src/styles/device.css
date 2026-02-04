@@ -45,6 +45,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, min(13vw));
   gap: 4vw;
+  margin-bottom: 12vh;
 }
 
 /* CARD */
@@ -186,7 +187,7 @@
   padding: 2vw;
   padding-top: 0;
   border-radius: 12px;
-  width: 28vw;
+  width: 40vw;
   height: 50vh;
   align-items: center;
   display: flex;

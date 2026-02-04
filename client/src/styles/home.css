@@ -15,7 +15,7 @@
 
 /* RECENTLY USED SECTION */
 .recently-used-section {
-  margin-bottom: 3rem;
+  margin-bottom: 1vh;
 }
 
 .section-title {
@@ -71,9 +71,6 @@
 }
 
 /* STATUS OVERVIEW SECTION */
-.status-overview-section {
-  margin-bottom: 2rem;
-}
 
 .status-overview {
   display: grid;
@@ -87,6 +84,7 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 0.75rem;
   padding: 1rem;
+  margin-bottom: 32vh;
 }
 
 .status-category-title {

@@ -12,10 +12,10 @@ const collection = db.collection("devices");
 
 // Configuration
 const SYNC_CONFIG = {
-  "1": { pendingTimeout: 30000, checkInterval: 10000 }, // Screens
+  "1": { pendingTimeout: 60000, checkInterval: 10000 }, // Screens
   "2": { pendingTimeout: 120000, checkInterval: 15000 }, // Computers
   "3": { pendingTimeout: 30000, checkInterval: 10000 }, // Tapo
-  "4": { pendingTimeout: 60000, checkInterval: 15000 }, // Projectors
+  "4": { pendingTimeout: 40000, checkInterval: 15000 }, // Projectors
 };
 
 function shouldSkipDevice(device, category) {
@@ -24,7 +24,7 @@ function shouldSkipDevice(device, category) {
   }
   
   const config = SYNC_CONFIG[category];
-  const transitionStates = ['PENDING_ON', 'PENDING_OFF', 'WARMING', 'COOLING'];
+  const transitionStates = ['PENDING','PENDING_ON', 'PENDING_OFF', 'WARMING', 'COOLING'];
   
   if (transitionStates.includes(device.state)) {
     const stateAge = Date.now() - new Date(device.timestamp).getTime();
@@ -157,7 +157,7 @@ async function syncProjectors() {
 
 export function startBackgroundSync() {
   // Screens - every 10 seconds
-  setInterval(syncScreens, 10 * 1000);
+  setInterval(syncScreens, SYNC_CONFIG["1"].checkInterval);
   syncScreens(); // Run immediately
 
   // ✅ Computers - every 15 seconds

@@ -19,6 +19,7 @@ export default function HomePage() {
 
   // Get recently used devices - sorted by timestamp (most recent first), limited to 4
   const recentlyUsedDevices = devices
+    .slice()
     .sort((a, b) => {
       const timeA = new Date(a.timestamp).getTime();
       const timeB = new Date(b.timestamp).getTime();
@@ -171,32 +172,34 @@ export default function HomePage() {
       {/* STATUS OVERVIEW */}
       <div className="status-overview-section">
         <h3 className="section-title">Status Overview</h3>
-        <div className="status-overview">
-          {Object.entries(CATEGORY_LABELS).map(([categoryId, categoryName]) => {
-            const categoryDevices = devices.filter(d => d.category === categoryId);
-            const devicesOn = categoryDevices.filter(d => d.state === "ON").length;
+        <div className="scrollable-holder">
+          <div className="status-overview">
+            {Object.entries(CATEGORY_LABELS).map(([categoryId, categoryName]) => {
+              const categoryDevices = devices.filter(d => d.category === categoryId);
+              const devicesOn = categoryDevices.filter(d => d.state === "ON").length;
 
-            return (
-              <div key={categoryId} className="status-category">
-                <div className="status-category-title">
-                  <span>{categoryName}</span>
-                  <span className="status-count">{devicesOn}/{categoryDevices.length}</span>
+              return (
+                <div key={categoryId} className="status-category">
+                  <div className="status-category-title">
+                    <span>{categoryName}</span>
+                    <span className="status-count">{devicesOn}/{categoryDevices.length}</span>
+                  </div>
+                  <div className="status-devices-grid">
+                    {categoryDevices.length === 0 ? (
+                      <div style={{ color: '#666', fontSize: '0.8rem' }}>No devices</div>
+                    ) : (
+                      categoryDevices.map(device => (
+                        <div key={device._id} className="device-status">
+                          <div className={`device-status-dot ${device.state === "ON" ? 'on' : 'off'}`}></div>
+                          <div className="device-status-name">{device.device_name}</div>
+                        </div>
+                      ))
+                    )}
+                  </div>
                 </div>
-                <div className="status-devices-grid">
-                  {categoryDevices.length === 0 ? (
-                    <div style={{ color: '#666', fontSize: '0.8rem' }}>No devices</div>
-                  ) : (
-                    categoryDevices.map(device => (
-                      <div key={device._id} className="device-status">
-                        <div className={`device-status-dot ${device.state === "ON" ? 'on' : 'off'}`}></div>
-                        <div className="device-status-name">{device.device_name}</div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
