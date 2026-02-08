@@ -29,7 +29,7 @@ import devicerouter from "./routes/devicerouter.mjs";
 
 import schedulerouter from "./routes/schedulerouter.mjs"
 
-import { device_refresh } from "./routes/devicesearch.mjs"
+import { device_refresh } from "./utils/devicesearch.mjs"
 
 import { executor } from "./schedule_executor.mjs";
 

@@ -16,7 +16,7 @@ export function WebSocketProvider({ children }) {
         const deviceMap = new Map(prev.map(d => [d._id, d]));
 
         updatedDevices.forEach(updated => {
-          // ✅ Handle deletions
+          // Handle deletions
           if (updated._deleted) {
             deviceMap.delete(updated._id);
           } else {

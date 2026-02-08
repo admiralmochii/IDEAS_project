@@ -59,13 +59,6 @@ async function checkProjectorStatus(device) {
   });
 }
 
-
-router.get("/status",async (req,res) => {
-    let {projector_names} = req.body;
-
-    
-})
-
 // POWER On
 router.post("/wake/:projector_name", async (req, res) => {
   const device_name = req.params.projector_name;

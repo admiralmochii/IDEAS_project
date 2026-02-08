@@ -225,44 +225,6 @@ router.get("/refresh/:name", async (req, res) => {
 
 });
 
-/**
- * GET all devices
- * Optional query: ?category=1|2|3|4
- */
-router.get("/get", async (req, res) => {
-  try {
-    const filter = {};
-    if (req.query.category) {
-      filter.category = String(req.query.category);
-    }
-
-    const devices = await collection.find(filter).toArray();
-
-    res.json(devices);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-/**
- * GET device by id
- */
-router.get("/get/:id", async (req, res) => {
-  try {
-    const device = await collection.findOne({
-      _id: new ObjectId(req.params.id)
-    });
-
-    if (!device) {
-      return res.status(404).json({ message: "Device not found" });
-    }
-
-    res.json(device);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
 router.post("/add", async (req,res) => {
     let {device_name, mac = "", ip, password = "", username = "", category} = req.body
 
@@ -490,7 +452,7 @@ router.delete("/delete/:device", async (req,res) => {
         const deletedDevice = await collection.findOne({ device_name });
         await collection.deleteOne({ device_name });
         
-        // ✅ Broadcast deletion (you'll need to handle this in frontend)
+        //Broadcast device deletion
         broadcastDeviceUpdate({ ...deletedDevice, _deleted: true });
 
         return res.status(200).json({message: "Device deleted succesfully."})

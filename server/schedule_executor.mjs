@@ -318,7 +318,6 @@ class ScheduleExecutor {
   }
 }
 
-// Singleton instance
 const executor = new ScheduleExecutor();
 
 export {executor}

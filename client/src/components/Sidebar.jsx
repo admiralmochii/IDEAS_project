@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { useWebSocket } from "../contexts/WebSocketContext";
 import HomeIcon from "../assets/House.svg";
-import DevicesIcon from "../assets/Devices.svg"; // Temporary until we get the actual icon
+import DevicesIcon from "../assets/Devices.svg";
 import ScheduleIcon from "../assets/Time.svg";
 import UserIcon from "../assets/Profile.svg";
 

@@ -6,7 +6,6 @@ import { checkScreenStatus } from "./routes/screensrouter.mjs";
 import { checkComputerStatus } from "./routes/pcrouter.mjs";
 import { checkLightsStatus } from "./routes/lightsrouter.mjs";
 import { checkProjectorStatus } from "./routes/projectorrouter.mjs";
-// Import your other check functions as needed
 
 const collection = db.collection("devices");
 
@@ -156,13 +155,11 @@ async function syncProjectors() {
 }
 
 export function startBackgroundSync() {
-  // Screens - every 10 seconds
-  setInterval(syncScreens, SYNC_CONFIG["1"].checkInterval);
-  syncScreens(); // Run immediately
+  setInterval(syncScreens, 10 * 1000);
+  syncScreens(); 
 
-  // ✅ Computers - every 15 seconds
   setInterval(syncComputers, SYNC_CONFIG["2"].checkInterval);
-  syncComputers(); // Run immediately
+  syncComputers(); 
 
   setInterval(syncLights, SYNC_CONFIG["3"].checkInterval);
   syncLights();
@@ -170,7 +167,7 @@ export function startBackgroundSync() {
   setInterval(syncProjectors, SYNC_CONFIG["4"].checkInterval);
   syncProjectors();
   
-  console.log('✓ Background sync started');
+  console.log('Background sync started');
   console.log('  - Screens: every 10s');
   console.log('  - Computers: every 15s')
   console.log('  - Tapo: every 10s');

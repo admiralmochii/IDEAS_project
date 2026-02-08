@@ -2,7 +2,7 @@ import { useState } from "react";
 import MenuButton from "../assets/Menu.svg";
 
 export default function DeviceCard({ device, onToggle, onEdit }) {
-  // ✅ Check if device is in a transition state (include WARMING/COOLING for projectors)
+  //Check if device is in a transition state (include WARMING/COOLING for projectors)
   const isPending = device.state?.startsWith("PENDING") ||
     device.state === "WARMING" ||
     device.state === "COOLING";
@@ -10,7 +10,7 @@ export default function DeviceCard({ device, onToggle, onEdit }) {
 
   async function handleClick() {
     if (isPending) {
-      // ✅ Custom message for projectors
+      //Custom message for projectors
       const message = device.category === "4"
         ? `${device.device_name} is warming up or cooling down. Please wait.`
         : `${device.device_name} is currently executing a command. Please wait.`;

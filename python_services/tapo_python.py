@@ -82,23 +82,3 @@ async def get_status(ip: str):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=5000)
-
-# ## API Endpoints
-
-# **Turn On:**
-# ```
-# POST /device/{ip}/on
-# Response: {"success": true, "message": "Device 192.168.1.102 turned on"}
-# ```
-
-# **Turn Off:**
-# ```
-# POST /device/{ip}/off
-# Response: {"success": true, "message": "Device 192.168.1.102 turned off"}
-# ```
-
-# **Get Status (on/off only):**
-# ```
-# GET /device/{ip}/status
-# Response: {"success": true, "data": {"device_on": true}}
-# ```

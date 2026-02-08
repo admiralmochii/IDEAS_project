@@ -13,17 +13,6 @@ async function extractErrorMessage(response) {
 }
 
 /**
- * GET all devices (optionally filtered by category)
- */
-export async function getDevicesByCategory(category) {
-  const url = category ? `${BASE}/get?category=${category}` : `${BASE}/get`;
-
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(await extractErrorMessage(res));
-  return res.json();
-}
-
-/**
  * ADD device
  * POST /device/add
  */

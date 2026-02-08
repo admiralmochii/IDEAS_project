@@ -152,33 +152,6 @@ try {
   }
 });
 
-// Wake all computers
-router.post('/wake-all', async (req, res) => {
-  const results = [];
-  let computers = await collection.find({category: "2"}).toArray()
-  
-  for (let i =0; i < computers.length; i++) {
-    try {
-      var computer = computers[i]
-      await new Promise((resolve, reject) => {
-        wol.wake(computer.mac, WOL_OPTIONS, (error) => {
-          if (error) reject(error);
-          else resolve();
-        });
-      });
-      results.push({ name: computer.device_name, status: 'success', action: 'wake' });
-      console.log(`✓ WOL sent to ${computer.device_name}`);
-    } catch (error) {
-      results.push({ id: computer.device_name, status: 'failed', action: 'wake', error: error.message });
-      console.error(`✗ Failed to wake ${computer.device_name}:`, error);
-    }
-    
-    await new Promise(resolve => setTimeout(resolve, 100));
-  }
-  
-  res.json({ results });
-});
-
 // Shutdown computer
 router.post('/shutdown/:computer_name', async (req, res) => {
   const device_name = req.params.computer_name;

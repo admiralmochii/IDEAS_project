@@ -1,0 +1,99 @@
+Device setup instructions for configuring devices for use in the application
+
+Tapo P110 Smart Plug Lights (or other plugs as listed in the 'tapo' package) ----
+1. If using existing account, login to the TP-Link Tapo application with the account details in the .env file in python_services
+2. If making new account, create a TP-Link cloud account and loging to the app 
+3. (if add more Tapo P110 smart plugs) press and hold on the power button on the side of the smart plug for 10s while it is connected 
+to power before releasing the button. The light should flash between green and orange or just be flashing.
+4. Go back to the app, go through the process of adding a device, selecting P110 or whatever compatible smart plug with the 'tapo'
+package you are installing
+5. select wifi setup
+6. connect the device you are using the app on to the wifi broadcast by the plug
+7. continue the process, if outdated firmware, do update
+8. Go to settings and turn on third-party support? If option is already selected, turn it off and on again (unsure why but this
+is needed when adding new devices while the option is already selected).
+
+Samsung QM65C Smart Displays (or in theory any that accept MDC) ----
+1. System settings, 
+    Auto power on --> off
+    Power saving --> off
+    Standby control --> off (or leave at auto for magicinfo)
+    remove configuration --> ON (needed to keep the connection alive as MDC is via TCP)
+
+2. Power and energy savings
+    No Signal power off --> off
+    Auto power off --> off
+    (these might conflict)
+
+3. Security
+    Remote Management --> Allow
+    
+
+Recommended to set a device name in Network Settings
+
+EPSON EB-PU1007W WUXGA 3LCD Projectors (in theory also any projectors with PJLINK compat.) ----
+1. In advanced network settings, enable PJLINK control and add a PJLINK password
+2. turn off anything related to auto power off etc.
+3. Enable any options for keeping it awake and listening its ports
+
+Computer setup ----
+1. turn off windows fast startup 
+	Control Panel → Power Options → Change plan settings -> change what power buttons do -> turn off fast startup
+2. Advanced Network Adapter Settings - Complete Check
+	Open Device Manager → Network Adapters → Your Ethernet Adapter → Properties:
+	Power Management Tab:
+
+	Enable Allow this device to wake the computer
+    Enable Only allow a magic packet to wake the computer
+	Disable Allow the computer to turn off this device to save power
+
+   Advanced Tab - Check ALL of these if the pc has:
+	Look for and set these values:
+
+	Wake on Magic Packet: Enabled
+	Wake on Pattern Match: Enabled (if available)
+	WOL & Shutdown Link Speed: Not Speed Down or 10Mbps First
+	Energy-Efficient Ethernet (EEE): Disabled
+	Green Ethernet: Disabled
+	Power Saving Mode: Disabled
+	Advanced EEE: Disabled
+	Gigabit Lite: Disabled
+	Ultra Low Power Mode: Disabled
+
+3. BIOS Settings - Detailed Check
+	Different BIOS have different names for these:
+	Power Management Section:
+
+	Wake on LAN: Enabled
+	Wake on PCI-E/PCI: Enabled
+	Wake on PME: Enabled
+	Resume by PCI-E Device: Enabled
+	Resume by Onboard LAN: Enabled
+
+	Advanced Power Settings:
+
+	ErP Ready/Support: Disabled
+	Deep Sleep: Disabled
+	Restore AC Power Loss: Power On or Last State
+
+	Network Stack: Enabled
+
+4. RESERVE IP on router for PC
+5. note: computer must be on for device to be added (wont show on the network although it is listening)
+6. set up ssh server on the computer
+
+    In windows powershell with admin perms run these commands
+
+    Add-WindowsCapability -Online -Name OpenSSH.Server~~~~0.0.1.0
+
+    # Start the SSH service
+    Start-Service sshd
+
+    # Set it to start automatically on boot
+    Set-Service -Name sshd -StartupType 'Automatic'
+
+    # Verify it's running
+    Get-Service sshd
+
+    New-NetFirewallRule -Name sshd -DisplayName 'OpenSSH Server (sshd)' -Enabled True -Direction Inbound -Protocol TCP -Action Allow -LocalPort 22
+

@@ -5,7 +5,7 @@ export function useDeviceWebSocket(onDeviceUpdate) {
   const wsRef = useRef(null);
   const [connected, setConnected] = useState(false);
   const reconnectTimeoutRef = useRef(null);
-  const onDeviceUpdateRef = useRef(onDeviceUpdate); // ✅ Use ref to avoid dependency
+  const onDeviceUpdateRef = useRef(onDeviceUpdate); //Use ref to avoid dependency
 
   // Keep ref updated
   useEffect(() => {
@@ -29,7 +29,7 @@ export function useDeviceWebSocket(onDeviceUpdate) {
           ws.close();
           return;
         }
-        console.log("✅ WebSocket connected");
+        console.log("WebSocket connected");
         setConnected(true);
       };
 
@@ -61,18 +61,18 @@ export function useDeviceWebSocket(onDeviceUpdate) {
       };
 
       ws.onerror = (error) => {
-        console.error("❌ WebSocket error:", error);
+        console.error("WebSocket error:", error);
       };
 
       ws.onclose = () => {
         if (!isMounted) return;
         
-        console.log("🔌 WebSocket disconnected");
+        console.log("WebSocket disconnected");
         setConnected(false);
         
         reconnectTimeoutRef.current = setTimeout(() => {
           if (isMounted) {
-            console.log("🔄 Reconnecting...");
+            console.log("Reconnecting...");
             connect();
           }
         }, 3000);
@@ -96,7 +96,7 @@ export function useDeviceWebSocket(onDeviceUpdate) {
         wsRef.current = null;
       }
     };
-  }, []); // ✅ Empty array - only connect once!
+  }, []); //connect once on mount
 
   return { connected };
 }
